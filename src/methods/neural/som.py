@@ -1,6 +1,13 @@
 import numpy as np
 import time
-from core.base_method import BaseMethod
+import sys
+from pathlib import Path
+
+try:
+    from ...core.base_method import BaseMethod
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from core.base_method import BaseMethod
 
 
 class SOM(BaseMethod):

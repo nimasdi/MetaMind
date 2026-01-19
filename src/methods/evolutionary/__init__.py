@@ -1,3 +1,4 @@
 from .ga import GeneticAlgorithm
+from .pso import PSO
 
-__all__ = ['GeneticAlgorithm']
+__all__ = ['GeneticAlgorithm' , "PSO"]

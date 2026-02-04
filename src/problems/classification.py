@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import pandas as pd
-from pyparsing import Path
+from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import (

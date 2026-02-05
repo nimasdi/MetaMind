@@ -14,7 +14,7 @@ class TSPProblem(BaseProblem):
     KNOWN_OPTIMA = {
         'eil51': 426,
         'berlin52': 7542,
-        'kroA100': 21282,
+        'kroa100': 21282,
     }
     
     def __init__(self, instance_name = "custom", n_cities = None):
@@ -24,6 +24,7 @@ class TSPProblem(BaseProblem):
         self.n_cities = n_cities
         self.cities = None  # Will store city coordinates
         self.distance_matrix = None
+        self.optimal_value = None
         
         if instance_name.lower() in self.KNOWN_OPTIMA:
             self.optimal_value = self.KNOWN_OPTIMA[instance_name.lower()]
@@ -93,6 +94,9 @@ class TSPProblem(BaseProblem):
         if len(self.cities) != self.n_cities:
             print(f"Warning: Expected {self.n_cities} cities, found {len(self.cities)}")
             self.n_cities = len(self.cities)
+        
+        if self.instance_name.lower() in self.KNOWN_OPTIMA:
+            self.optimal_value = self.KNOWN_OPTIMA[self.instance_name.lower()]
     
     def compute_distance_matrix(self):
         n = self.n_cities
@@ -108,15 +112,17 @@ class TSPProblem(BaseProblem):
         if isinstance(tour, list):
             tour = np.array(tour)
         
+        tour = tour.astype(int)
+        
         total_distance = 0.0
         n = len(tour)
         
         for i in range(n):
-            from_city = tour[i]
-            to_city = tour[(i + 1) % n]
+            from_city = int(tour[i])
+            to_city = int(tour[(i + 1) % n])
             total_distance += self.distance_matrix[from_city, to_city]
         
-        return total_distance
+        return float(total_distance)
     
     def validate_solution(self, tour):
         if len(tour) != self.n_cities:
@@ -150,6 +156,177 @@ class TSPProblem(BaseProblem):
         
         distance = self.evaluate(tour)
         return tour, distance
+    
+    def two_opt(self, tour):
+        tour = list(tour)
+        n = len(tour)
+        improved = True
+        best_distance = self.evaluate(tour)
+        
+        while improved:
+            improved = False
+            for i in range(1, n - 1):
+                for j in range(i + 1, n):
+                    # Try reversing the segment tour[i:j+1]
+                    new_tour = tour[:i] + tour[i:j+1][::-1] + tour[j+1:]
+                    new_distance = self.evaluate(new_tour)
+                    
+                    if new_distance < best_distance:
+                        tour = new_tour
+                        best_distance = new_distance
+                        improved = True
+                        break
+                if improved:
+                    break
+        
+        return tour, best_distance
+    
+    def get_lkh_estimation(self, num_starts=20, use_2opt=True, time_limit=60):
+        import time
+        start_time = time.time()
+        
+        best_tour = None
+        best_distance = float('inf')
+        
+        start_cities = np.random.choice(self.n_cities, min(num_starts, self.n_cities), replace=False)
+        
+        for start_city in start_cities:
+            if time.time() - start_time > time_limit:
+                break
+            
+            tour, distance = self.get_nearest_neighbor_tour(int(start_city))
+            
+            if use_2opt:
+                tour, distance = self.two_opt(tour)
+            
+            if distance < best_distance:
+                best_distance = distance
+                best_tour = tour
+        
+        print(f"  LKH estimation: {best_distance:.2f} (from {len(start_cities)} starts with 2-opt)")
+        return best_tour, best_distance
+    
+    def solve_exact_branch_and_bound(self, time_limit=60):
+        import time
+        
+        if self.n_cities > 30:
+            raise ValueError(f"Exact solver not recommended for {self.n_cities} cities (> 25). Use LKH estimation instead.")
+        
+        print(f"  Running exact solver (branch-and-bound) for {self.n_cities} cities...")
+        if self.n_cities >= 20:
+            print(f"  Warning: This may take several minutes for 20+ cities")
+        
+        start_time = time.time()
+        
+        nn_tour, nn_distance = self.get_nearest_neighbor_tour()
+        best_distance = nn_distance
+        best_tour = nn_tour
+        
+        improved_tour, improved_distance = self.two_opt(nn_tour)
+        if improved_distance < best_distance:
+            best_distance = improved_distance
+            best_tour = improved_tour
+        
+        print(f"  Initial upper bound: {best_distance:.2f}")
+        
+        nodes_explored = [0]
+        nodes_pruned = [0]
+        time_limit_reached = [False]
+        
+        def branch_and_bound(path, unvisited, current_distance):
+            nonlocal best_distance, best_tour
+            
+            nodes_explored[0] += 1
+            
+            if nodes_explored[0] % 100000 == 0:
+                if time.time() - start_time > time_limit:
+                    if not time_limit_reached[0]:
+                        time_limit_reached[0] = True
+                        elapsed = time.time() - start_time
+                        print(f"  Time limit reached at {elapsed:.1f}s! Returning best solution found...")
+                    return True  # Signal to stop
+            
+            # If time limit already reached by another branch, stop immediately
+            if time_limit_reached[0]:
+                return True
+            
+            # Progress report every 1M nodes
+            if nodes_explored[0] % 1000000 == 0:
+                elapsed = time.time() - start_time
+                print(f"  Progress: {nodes_explored[0]/1e6:.1f}M nodes explored, "
+                      f"{nodes_pruned[0]/1e6:.1f}M pruned, best={best_distance:.2f}, time={elapsed:.1f}s")
+            
+            # Base case: complete tour
+            if not unvisited:
+                total_distance = current_distance + self.distance_matrix[path[-1], path[0]]
+                if total_distance < best_distance:
+                    best_distance = total_distance
+                    best_tour = path[:]
+                return False
+            
+            # Lower bound calculation with MST heuristic
+            lower_bound = current_distance
+            
+            if unvisited:
+                min_to_unvisited = min(self.distance_matrix[path[-1], city] for city in unvisited)
+                lower_bound += min_to_unvisited
+            
+            if unvisited:
+                min_to_start = min(self.distance_matrix[city, path[0]] for city in unvisited)
+                lower_bound += min_to_start
+            
+            # Prune if lower bound exceeds best
+            if lower_bound >= best_distance:
+                nodes_pruned[0] += 1
+                return False
+            
+            # Branch on nearest unvisited cities first
+            current_city = path[-1]
+            sorted_unvisited = sorted(unvisited, 
+                                     key=lambda city: self.distance_matrix[current_city, city])
+            
+            for next_city in sorted_unvisited:
+                # Check time limit in tight loop
+                if time_limit_reached[0]:
+                    return True
+                    
+                new_distance = current_distance + self.distance_matrix[current_city, next_city]
+                
+                # Prune if already exceeds best
+                if new_distance >= best_distance:
+                    nodes_pruned[0] += 1
+                    continue
+                
+                path.append(next_city)
+                unvisited.remove(next_city)
+                
+                stop = branch_and_bound(path, unvisited, new_distance)
+                
+                path.pop()
+                unvisited.add(next_city)
+                
+                if stop:  # Time limit reached
+                    return True
+            
+            return False
+        
+        initial_path = [0]
+        initial_unvisited = set(range(1, self.n_cities))
+        
+        branch_and_bound(initial_path, initial_unvisited, 0.0)
+        
+        elapsed = time.time() - start_time
+        
+        if time_limit_reached[0]:
+            print(f"  Exact solver stopped after {elapsed:.2f}s (time limit)")
+            print(f"  Best solution found: {best_distance:.2f} (may not be optimal)")
+        else:
+            print(f"  Exact solver completed in {elapsed:.2f}s")
+            print(f"  Optimal solution: {best_distance:.2f}")
+        
+        print(f"  Nodes explored: {nodes_explored[0]:,}, pruned: {nodes_pruned[0]:,}")
+        
+        return best_tour, best_distance
     
     def compute_metrics(self, solution, additional_data = None):
         metrics = super().compute_metrics(solution, additional_data)

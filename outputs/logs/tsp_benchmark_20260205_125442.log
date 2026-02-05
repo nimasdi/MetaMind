@@ -1,0 +1,12 @@
+2026-02-05 12:54:42 - tsp_benchmark - INFO - ====================================================================================================
+2026-02-05 12:54:42 - tsp_benchmark - INFO - TSP BENCHMARK EXPERIMENT
+2026-02-05 12:54:42 - tsp_benchmark - INFO - ====================================================================================================
+2026-02-05 12:54:42 - tsp_benchmark - INFO - Start Time: 2026-02-05 12:54:42
+2026-02-05 12:54:42 - tsp_benchmark - INFO - MetaMind Agent initialized with model: llama-3.3-70b-versatile
+2026-02-05 12:54:42 - tsp_benchmark - INFO - Loading TSPLIB instances...
+2026-02-05 12:54:42 - tsp_benchmark - INFO -   ✓ Loaded eil51: 51 cities, optimal=426
+2026-02-05 12:54:42 - tsp_benchmark - INFO -   ✓ Loaded berlin52: 52 cities, optimal=7542
+2026-02-05 12:54:42 - tsp_benchmark - INFO -   ✓ Loaded kroA100: 100 cities, optimal=21282
+2026-02-05 12:54:42 - tsp_benchmark - INFO - 
+Generating random instances...
+2026-02-05 12:54:42 - tsp_benchmark - INFO -   Generating random_30 and computing exact optimal solution...

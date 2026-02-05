@@ -1,0 +1,946 @@
+[
+  {
+    "problem_name": "Rastrigin-10D",
+    "function_name": "Rastrigin",
+    "dimension": 10,
+    "optimal_value": 0.0,
+    "feedback_enabled": true,
+    "total_iterations": 3,
+    "best_iteration": 2,
+    "all_iterations": [
+      {
+        "iteration": 0,
+        "method": "PSO",
+        "recommendation": {
+          "selected_method": "PSO",
+          "confidence": 0.9,
+          "expected_performance": "high",
+          "reasoning": "The Rastrigin function is a continuous, non-linear, multi-modal optimization problem. Particle Swarm Optimization (PSO) is well-suited for such problems due to its ability to handle continuous search spaces and its efficiency in converging to the global optimum. PSO's strengths in continuous optimization and its few parameters make it an ideal choice for this problem.",
+          "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.6,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+          }
+        },
+        "n_runs": 5,
+        "best_fitness": {
+          "min": 10.94454459020713,
+          "max": 24.873931041522454,
+          "mean": 17.113252356567763,
+          "median": 14.924355584046822,
+          "std": 5.354298305431721,
+          "var": 28.668510343548995,
+          "q25": 12.9344374698602,
+          "q75": 21.888993097202203,
+          "count": 5
+        },
+        "error": {
+          "min": 10.94454459020713,
+          "max": 24.873931041522454,
+          "mean": 17.113252356567763,
+          "median": 14.924355584046822,
+          "std": 5.354298305431721,
+          "var": 28.668510343548995,
+          "q25": 12.9344374698602,
+          "q75": 21.888993097202203,
+          "count": 5
+        },
+        "gap_percent": {
+          "min": 109445445902.0713,
+          "max": 248739310415.22455,
+          "mean": 171132523565.67764,
+          "median": 149243555840.46823,
+          "std": 53542983054.31721,
+          "var": 2.8668510343549e+21,
+          "q25": 129344374698.60199,
+          "q75": 218889930972.02203,
+          "count": 5
+        },
+        "computation_time": {
+          "min": 0.8001110553741455,
+          "max": 0.8186511993408203,
+          "mean": 0.8046870231628418,
+          "median": 0.801954984664917,
+          "std": 0.007025511808366994,
+          "var": 4.9357816169504074e-05,
+          "q25": 0.8005731105804443,
+          "q75": 0.8021447658538818,
+          "count": 5
+        },
+        "function_evaluations": {
+          "min": 100100.0,
+          "max": 100100.0,
+          "mean": 100100.0,
+          "median": 100100.0,
+          "std": 0.0,
+          "var": 0.0,
+          "q25": 100100.0,
+          "q75": 100100.0,
+          "count": 5
+        },
+        "best_run": {
+          "run": 2,
+          "best_fitness": 10.94454459020713,
+          "best_solution": null,
+          "computation_time": 0.8001110553741455,
+          "convergence_history": [],
+          "gap_percent": 109445445902.0713,
+          "iterations": 0,
+          "function_evaluations": 100100,
+          "error": 10.94454459020713
+        },
+        "all_runs": [
+          {
+            "run": 1,
+            "best_fitness": 14.924355584046822,
+            "best_solution": null,
+            "computation_time": 0.8186511993408203,
+            "convergence_history": [],
+            "gap_percent": 149243555840.46823,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 14.924355584046822
+          },
+          {
+            "run": 2,
+            "best_fitness": 10.94454459020713,
+            "best_solution": null,
+            "computation_time": 0.8001110553741455,
+            "convergence_history": [],
+            "gap_percent": 109445445902.0713,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 10.94454459020713
+          },
+          {
+            "run": 3,
+            "best_fitness": 24.873931041522454,
+            "best_solution": null,
+            "computation_time": 0.8005731105804443,
+            "convergence_history": [],
+            "gap_percent": 248739310415.22455,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 24.873931041522454
+          },
+          {
+            "run": 4,
+            "best_fitness": 12.9344374698602,
+            "best_solution": null,
+            "computation_time": 0.8021447658538818,
+            "convergence_history": [],
+            "gap_percent": 129344374698.60199,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 12.9344374698602
+          },
+          {
+            "run": 5,
+            "best_fitness": 21.888993097202203,
+            "best_solution": null,
+            "computation_time": 0.801954984664917,
+            "convergence_history": [],
+            "gap_percent": 218889930972.02203,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 21.888993097202203
+          }
+        ],
+        "interpretation": {
+          "performance_assessment": "poor",
+          "performance_explanation": "The convergence of the PSO method was likely erratic, given the large gap from the optimal solution. The method did not find the solution quickly, as evidenced by the high number of iterations (100100) and the significant gap from the optimal value (171132523565.67764%). The computation time of 0.80s is reasonable, but the overall performance is disappointing. The best fitness value of 10.94454459020713 is far from the optimal value of 0.0, indicating that the method struggled to converge to the global optimum.",
+          "comparison_with_expected": "The actual performance is significantly worse than the expected performance, which was rated as 'high'. This suggests that the chosen parameters or method may not be suitable for this problem.",
+          "improvement_recommendations": [
+            {
+              "type": "parameter_tuning",
+              "suggestion": "decrease w to 0.4 and increase c1 and c2 to 1.5 to promote exploration"
+            },
+            {
+              "type": "alternative_method",
+              "suggestion": "try GA or CMA-ES for better exploration and convergence"
+            },
+            {
+              "type": "hybrid_approach",
+              "suggestion": "combine PSO with local search to refine the solution"
+            }
+          ],
+          "confidence_assessment": "LOW",
+          "next_steps": [
+            "try alternative optimization methods",
+            "perform parameter tuning for PSO",
+            "experiment with hybrid approaches",
+            "increase the number of particles or iterations"
+          ]
+        }
+      },
+      {
+        "iteration": 1,
+        "method": "PSO",
+        "recommendation": {
+          "selected_method": "PSO",
+          "confidence": 0.8,
+          "expected_performance": "medium",
+          "reasoning": "The Rastrigin-10D problem is a multi-modal optimization problem. Given the previous execution results, it seems that the gap to the optimal solution is unknown, but the best fitness values are relatively high. Since the gap is unknown, we will assume it is moderate and try to balance exploration and exploitation. PSO is a suitable method for this problem due to its ability to handle continuous optimization and multi-modal problems.",
+          "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1200,
+            "w": 0.65,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.6
+          }
+        },
+        "n_runs": 5,
+        "best_fitness": {
+          "min": 8.954626476020536,
+          "max": 15.919329800035428,
+          "mean": 11.740508813190308,
+          "median": 11.93949860948132,
+          "std": 2.387898126587567,
+          "var": 5.702057462960412,
+          "q25": 9.949585533113833,
+          "q75": 11.939503647300427,
+          "count": 5
+        },
+        "error": {
+          "min": 8.954626476020536,
+          "max": 15.919329800035428,
+          "mean": 11.740508813190308,
+          "median": 11.93949860948132,
+          "std": 2.387898126587567,
+          "var": 5.702057462960412,
+          "q25": 9.949585533113833,
+          "q75": 11.939503647300427,
+          "count": 5
+        },
+        "gap_percent": {
+          "min": 89546264760.20537,
+          "max": 159193298000.35428,
+          "mean": 117405088131.9031,
+          "median": 119394986094.81319,
+          "std": 23878981265.875668,
+          "var": 5.702057462960412e+20,
+          "q25": 99495855331.13834,
+          "q75": 119395036473.00427,
+          "count": 5
+        },
+        "computation_time": {
+          "min": 1.4530689716339111,
+          "max": 1.4773671627044678,
+          "mean": 1.4649998188018798,
+          "median": 1.466437816619873,
+          "std": 0.007944807979085547,
+          "var": 6.311997382454138e-05,
+          "q25": 1.4611921310424805,
+          "q75": 1.466933012008667,
+          "count": 5
+        },
+        "function_evaluations": {
+          "min": 180150.0,
+          "max": 180150.0,
+          "mean": 180150.0,
+          "median": 180150.0,
+          "std": 0.0,
+          "var": 0.0,
+          "q25": 180150.0,
+          "q75": 180150.0,
+          "count": 5
+        },
+        "best_run": {
+          "run": 1,
+          "best_fitness": 8.954626476020536,
+          "best_solution": null,
+          "computation_time": 1.4773671627044678,
+          "convergence_history": [],
+          "gap_percent": 89546264760.20537,
+          "iterations": 0,
+          "function_evaluations": 180150,
+          "error": 8.954626476020536
+        },
+        "all_runs": [
+          {
+            "run": 1,
+            "best_fitness": 8.954626476020536,
+            "best_solution": null,
+            "computation_time": 1.4773671627044678,
+            "convergence_history": [],
+            "gap_percent": 89546264760.20537,
+            "iterations": 0,
+            "function_evaluations": 180150,
+            "error": 8.954626476020536
+          },
+          {
+            "run": 2,
+            "best_fitness": 11.939503647300427,
+            "best_solution": null,
+            "computation_time": 1.4611921310424805,
+            "convergence_history": [],
+            "gap_percent": 119395036473.00427,
+            "iterations": 0,
+            "function_evaluations": 180150,
+            "error": 11.939503647300427
+          },
+          {
+            "run": 3,
+            "best_fitness": 9.949585533113833,
+            "best_solution": null,
+            "computation_time": 1.466933012008667,
+            "convergence_history": [],
+            "gap_percent": 99495855331.13834,
+            "iterations": 0,
+            "function_evaluations": 180150,
+            "error": 9.949585533113833
+          },
+          {
+            "run": 4,
+            "best_fitness": 15.919329800035428,
+            "best_solution": null,
+            "computation_time": 1.466437816619873,
+            "convergence_history": [],
+            "gap_percent": 159193298000.35428,
+            "iterations": 0,
+            "function_evaluations": 180150,
+            "error": 15.919329800035428
+          },
+          {
+            "run": 5,
+            "best_fitness": 11.93949860948132,
+            "best_solution": null,
+            "computation_time": 1.4530689716339111,
+            "convergence_history": [],
+            "gap_percent": 119394986094.81319,
+            "iterations": 0,
+            "function_evaluations": 180150,
+            "error": 11.93949860948132
+          }
+        ]
+      },
+      {
+        "iteration": 2,
+        "method": "PSO",
+        "recommendation": {
+          "selected_method": "PSO",
+          "confidence": 0.8,
+          "expected_performance": "medium",
+          "reasoning": "The gap to optimal is unknown, but the best fitness values indicate that the current solution is not optimal. Given the Rastrigin-10D problem, which is a multi-modal optimization problem, PSO is a suitable method. To improve the solution, we will adjust the parameters to increase exploration.",
+          "parameters": {
+            "n_particles": 200,
+            "max_iterations": 1500,
+            "w": 0.6,
+            "c1": 1.8,
+            "c2": 1.8,
+            "w_decay": true,
+            "velocity_clamp": 0.7
+          }
+        },
+        "n_runs": 5,
+        "best_fitness": {
+          "min": 5.969754342559753,
+          "max": 14.92437074294213,
+          "mean": 10.546558987466536,
+          "median": 10.94453955238805,
+          "std": 3.2454524467231223,
+          "var": 10.532961583941102,
+          "q25": 7.959672456746347,
+          "q75": 12.934457842696403,
+          "count": 5
+        },
+        "error": {
+          "min": 5.969754342559753,
+          "max": 14.92437074294213,
+          "mean": 10.546558987466536,
+          "median": 10.94453955238805,
+          "std": 3.2454524467231223,
+          "var": 10.532961583941102,
+          "q25": 7.959672456746347,
+          "q75": 12.934457842696403,
+          "count": 5
+        },
+        "gap_percent": {
+          "min": 59697543425.59753,
+          "max": 149243707429.4213,
+          "mean": 105465589874.66537,
+          "median": 109445395523.88051,
+          "std": 32454524467.231224,
+          "var": 1.0532961583941102e+21,
+          "q25": 79596724567.46347,
+          "q75": 129344578426.96404,
+          "count": 5
+        },
+        "computation_time": {
+          "min": 2.4179892539978027,
+          "max": 2.4497320652008057,
+          "mean": 2.4258874893188476,
+          "median": 2.4208920001983643,
+          "std": 0.011994597918042681,
+          "var": 0.00014387037921551382,
+          "q25": 2.419090986251831,
+          "q75": 2.4217331409454346,
+          "count": 5
+        },
+        "function_evaluations": {
+          "min": 300200.0,
+          "max": 300200.0,
+          "mean": 300200.0,
+          "median": 300200.0,
+          "std": 0.0,
+          "var": 0.0,
+          "q25": 300200.0,
+          "q75": 300200.0,
+          "count": 5
+        },
+        "best_run": {
+          "run": 3,
+          "best_fitness": 5.969754342559753,
+          "best_solution": null,
+          "computation_time": 2.4179892539978027,
+          "convergence_history": [],
+          "gap_percent": 59697543425.59753,
+          "iterations": 0,
+          "function_evaluations": 300200,
+          "error": 5.969754342559753
+        },
+        "all_runs": [
+          {
+            "run": 1,
+            "best_fitness": 10.94453955238805,
+            "best_solution": null,
+            "computation_time": 2.4497320652008057,
+            "convergence_history": [],
+            "gap_percent": 109445395523.88051,
+            "iterations": 0,
+            "function_evaluations": 300200,
+            "error": 10.94453955238805
+          },
+          {
+            "run": 2,
+            "best_fitness": 14.92437074294213,
+            "best_solution": null,
+            "computation_time": 2.4217331409454346,
+            "convergence_history": [],
+            "gap_percent": 149243707429.4213,
+            "iterations": 0,
+            "function_evaluations": 300200,
+            "error": 14.92437074294213
+          },
+          {
+            "run": 3,
+            "best_fitness": 5.969754342559753,
+            "best_solution": null,
+            "computation_time": 2.4179892539978027,
+            "convergence_history": [],
+            "gap_percent": 59697543425.59753,
+            "iterations": 0,
+            "function_evaluations": 300200,
+            "error": 5.969754342559753
+          },
+          {
+            "run": 4,
+            "best_fitness": 7.959672456746347,
+            "best_solution": null,
+            "computation_time": 2.419090986251831,
+            "convergence_history": [],
+            "gap_percent": 79596724567.46347,
+            "iterations": 0,
+            "function_evaluations": 300200,
+            "error": 7.959672456746347
+          },
+          {
+            "run": 5,
+            "best_fitness": 12.934457842696403,
+            "best_solution": null,
+            "computation_time": 2.4208920001983643,
+            "convergence_history": [],
+            "gap_percent": 129344578426.96404,
+            "iterations": 0,
+            "function_evaluations": 300200,
+            "error": 12.934457842696403
+          }
+        ],
+        "interpretation": {
+          "performance_assessment": "poor",
+          "performance_explanation": "The convergence was erratic, and the method did not find the solution quickly. The computation time of 2.43s is reasonable, but the gap from the optimal solution is significantly high at 105465589874.66537%. This indicates that the PSO method struggled to find a good solution for the given problem.",
+          "comparison_with_expected": "The actual performance is worse than the expected performance, which was medium. This suggests that the chosen parameters for the PSO method may not be suitable for this problem.",
+          "improvement_recommendations": [
+            {
+              "type": "parameter_tuning",
+              "suggestion": "decrease w to 0.4 and increase c1 and c2 to 2.0 to encourage more exploration"
+            },
+            {
+              "type": "alternative_method",
+              "suggestion": "try GA for better exploration and exploitation of the search space"
+            },
+            {
+              "type": "hybrid_approach",
+              "suggestion": "combine PSO with local search to refine the solutions found by PSO"
+            }
+          ],
+          "confidence_assessment": "LOW",
+          "next_steps": [
+            "try the suggested parameter tuning for PSO",
+            "implement and test GA for the problem",
+            "investigate the use of hybrid approaches combining PSO with local search methods"
+          ]
+        }
+      }
+    ],
+    "final_best_fitness": {
+      "min": 5.969754342559753,
+      "max": 14.92437074294213,
+      "mean": 10.546558987466536,
+      "median": 10.94453955238805,
+      "std": 3.2454524467231223,
+      "var": 10.532961583941102,
+      "q25": 7.959672456746347,
+      "q75": 12.934457842696403,
+      "count": 5
+    },
+    "final_best_run": {
+      "run": 3,
+      "best_fitness": 5.969754342559753,
+      "best_solution": null,
+      "computation_time": 2.4179892539978027,
+      "convergence_history": [],
+      "gap_percent": 59697543425.59753,
+      "iterations": 0,
+      "function_evaluations": 300200,
+      "error": 5.969754342559753
+    },
+    "final_interpretation": {
+      "performance_assessment": "poor",
+      "performance_explanation": "The convergence was erratic, and the method did not find the solution quickly. The computation time of 2.43s is reasonable, but the gap from the optimal solution is significantly high at 105465589874.66537%. This indicates that the PSO method struggled to find a good solution for the given problem.",
+      "comparison_with_expected": "The actual performance is worse than the expected performance, which was medium. This suggests that the chosen parameters for the PSO method may not be suitable for this problem.",
+      "improvement_recommendations": [
+        {
+          "type": "parameter_tuning",
+          "suggestion": "decrease w to 0.4 and increase c1 and c2 to 2.0 to encourage more exploration"
+        },
+        {
+          "type": "alternative_method",
+          "suggestion": "try GA for better exploration and exploitation of the search space"
+        },
+        {
+          "type": "hybrid_approach",
+          "suggestion": "combine PSO with local search to refine the solutions found by PSO"
+        }
+      ],
+      "confidence_assessment": "LOW",
+      "next_steps": [
+        "try the suggested parameter tuning for PSO",
+        "implement and test GA for the problem",
+        "investigate the use of hybrid approaches combining PSO with local search methods"
+      ]
+    },
+    "timestamp": "2026-02-05T15:03:58.036459"
+  },
+  {
+    "problem_name": "Ackley-10D",
+    "function_name": "Ackley",
+    "dimension": 10,
+    "optimal_value": 0.0,
+    "feedback_enabled": true,
+    "total_iterations": 1,
+    "best_iteration": 0,
+    "all_iterations": [
+      {
+        "iteration": 0,
+        "method": "PSO",
+        "recommendation": {
+          "selected_method": "PSO",
+          "confidence": 0.9,
+          "expected_performance": "high",
+          "reasoning": "The Ackley-10D problem is a continuous function optimization problem with a bounded search space. Particle Swarm Optimization (PSO) is well-suited for this type of problem due to its ability to efficiently search for the global minimum in continuous spaces. PSO's strengths in fast convergence and handling of multi-modal problems make it an ideal choice.",
+          "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.6,
+            "c1": 2.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+          }
+        },
+        "n_runs": 5,
+        "best_fitness": {
+          "min": 7.549516567451064e-15,
+          "max": 1.1551485027098285,
+          "mean": 0.23102970054197458,
+          "median": 1.4654943925052066e-14,
+          "std": 0.46205940108392696,
+          "var": 0.21349889013003726,
+          "q25": 7.549516567451064e-15,
+          "q75": 1.4654943925052066e-14,
+          "count": 5
+        },
+        "error": {
+          "min": 7.549516567451064e-15,
+          "max": 1.1551485027098285,
+          "mean": 0.23102970054197458,
+          "median": 1.4654943925052066e-14,
+          "std": 0.46205940108392696,
+          "var": 0.21349889013003726,
+          "q25": 7.549516567451064e-15,
+          "q75": 1.4654943925052066e-14,
+          "count": 5
+        },
+        "gap_percent": {
+          "min": 0.0,
+          "max": 11551485027.098286,
+          "mean": 2310297005.419657,
+          "median": 0.0,
+          "std": 4620594010.839315,
+          "var": 2.134988901300415e+19,
+          "q25": 0.0,
+          "q75": 0.0,
+          "count": 5
+        },
+        "computation_time": {
+          "min": 0.9270358085632324,
+          "max": 0.9770431518554688,
+          "mean": 0.9501653194427491,
+          "median": 0.9464268684387207,
+          "std": 0.0179683187861469,
+          "var": 0.00032286048000059966,
+          "q25": 0.937065839767456,
+          "q75": 0.9632549285888672,
+          "count": 5
+        },
+        "function_evaluations": {
+          "min": 100100.0,
+          "max": 100100.0,
+          "mean": 100100.0,
+          "median": 100100.0,
+          "std": 0.0,
+          "var": 0.0,
+          "q25": 100100.0,
+          "q75": 100100.0,
+          "count": 5
+        },
+        "best_run": {
+          "run": 2,
+          "best_fitness": 7.549516567451064e-15,
+          "best_solution": null,
+          "computation_time": 0.9632549285888672,
+          "convergence_history": [],
+          "gap_percent": 0.0,
+          "iterations": 0,
+          "function_evaluations": 100100,
+          "error": 7.549516567451064e-15
+        },
+        "all_runs": [
+          {
+            "run": 1,
+            "best_fitness": 1.1551485027098285,
+            "best_solution": null,
+            "computation_time": 0.9770431518554688,
+            "convergence_history": [],
+            "gap_percent": 11551485027.098286,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 1.1551485027098285
+          },
+          {
+            "run": 2,
+            "best_fitness": 7.549516567451064e-15,
+            "best_solution": null,
+            "computation_time": 0.9632549285888672,
+            "convergence_history": [],
+            "gap_percent": 0.0,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 7.549516567451064e-15
+          },
+          {
+            "run": 3,
+            "best_fitness": 1.4654943925052066e-14,
+            "best_solution": null,
+            "computation_time": 0.937065839767456,
+            "convergence_history": [],
+            "gap_percent": 0.0,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 1.4654943925052066e-14
+          },
+          {
+            "run": 4,
+            "best_fitness": 7.549516567451064e-15,
+            "best_solution": null,
+            "computation_time": 0.9464268684387207,
+            "convergence_history": [],
+            "gap_percent": 0.0,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 7.549516567451064e-15
+          },
+          {
+            "run": 5,
+            "best_fitness": 1.4654943925052066e-14,
+            "best_solution": null,
+            "computation_time": 0.9270358085632324,
+            "convergence_history": [],
+            "gap_percent": 0.0,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 1.4654943925052066e-14
+          }
+        ],
+        "interpretation": {
+          "performance_assessment": "excellent",
+          "performance_explanation": "The convergence of the PSO method was smooth, finding the solution quickly with a best fitness of 7.549516567451064e-15. The computation time of 0.95s is reasonable for the given problem. The gap from the optimal value is extremely low, indicating that the method performed exceptionally well.",
+          "comparison_with_expected": "The actual performance exceeds the expected performance of 'high', as the method was able to find a solution very close to the optimal value.",
+          "improvement_recommendations": [
+            {
+              "type": "parameter_tuning",
+              "suggestion": "Decrease the value of w to 0.4 to further improve convergence"
+            },
+            {
+              "type": "alternative_method",
+              "suggestion": "Try using a different optimization method, such as GA or DE, to compare performance"
+            },
+            {
+              "type": "hybrid_approach",
+              "suggestion": "Combine PSO with a local search algorithm to further refine the solution"
+            }
+          ],
+          "confidence_assessment": "HIGH",
+          "next_steps": [
+            "Apply the optimized parameters to other similar problems to test robustness",
+            "Compare the performance of PSO with other optimization methods on the same problem",
+            "Investigate the use of hybrid approaches to further improve solution quality"
+          ]
+        }
+      }
+    ],
+    "final_best_fitness": {
+      "min": 7.549516567451064e-15,
+      "max": 1.1551485027098285,
+      "mean": 0.23102970054197458,
+      "median": 1.4654943925052066e-14,
+      "std": 0.46205940108392696,
+      "var": 0.21349889013003726,
+      "q25": 7.549516567451064e-15,
+      "q75": 1.4654943925052066e-14,
+      "count": 5
+    },
+    "final_best_run": {
+      "run": 2,
+      "best_fitness": 7.549516567451064e-15,
+      "best_solution": null,
+      "computation_time": 0.9632549285888672,
+      "convergence_history": [],
+      "gap_percent": 0.0,
+      "iterations": 0,
+      "function_evaluations": 100100,
+      "error": 7.549516567451064e-15
+    },
+    "final_interpretation": {
+      "performance_assessment": "excellent",
+      "performance_explanation": "The convergence of the PSO method was smooth, finding the solution quickly with a best fitness of 7.549516567451064e-15. The computation time of 0.95s is reasonable for the given problem. The gap from the optimal value is extremely low, indicating that the method performed exceptionally well.",
+      "comparison_with_expected": "The actual performance exceeds the expected performance of 'high', as the method was able to find a solution very close to the optimal value.",
+      "improvement_recommendations": [
+        {
+          "type": "parameter_tuning",
+          "suggestion": "Decrease the value of w to 0.4 to further improve convergence"
+        },
+        {
+          "type": "alternative_method",
+          "suggestion": "Try using a different optimization method, such as GA or DE, to compare performance"
+        },
+        {
+          "type": "hybrid_approach",
+          "suggestion": "Combine PSO with a local search algorithm to further refine the solution"
+        }
+      ],
+      "confidence_assessment": "HIGH",
+      "next_steps": [
+        "Apply the optimized parameters to other similar problems to test robustness",
+        "Compare the performance of PSO with other optimization methods on the same problem",
+        "Investigate the use of hybrid approaches to further improve solution quality"
+      ]
+    },
+    "timestamp": "2026-02-05T15:04:05.973543"
+  },
+  {
+    "problem_name": "Rosenbrock-10D",
+    "function_name": "Rosenbrock",
+    "dimension": 10,
+    "optimal_value": 0.0,
+    "feedback_enabled": true,
+    "total_iterations": 1,
+    "best_iteration": 0,
+    "all_iterations": [
+      {
+        "iteration": 0,
+        "method": "PSO",
+        "recommendation": {
+          "selected_method": "PSO",
+          "confidence": 0.9,
+          "expected_performance": "high",
+          "reasoning": "The Rosenbrock function is a classic continuous optimization problem. Particle Swarm Optimization (PSO) is well-suited for this problem due to its ability to efficiently search for the global minimum in continuous spaces. PSO's strengths in handling continuous optimization problems, its fast convergence, and few parameters make it an ideal choice.",
+          "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.6,
+            "c1": 2.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+          }
+        },
+        "n_runs": 5,
+        "best_fitness": {
+          "min": 1.2860868434245454e-05,
+          "max": 25.153615935109706,
+          "mean": 6.355604110536192,
+          "median": 0.9101269210746828,
+          "std": 9.572492820610169,
+          "var": 91.63261880063321,
+          "q25": 0.5908055302043591,
+          "q75": 5.12345930542378,
+          "count": 5
+        },
+        "error": {
+          "min": 1.2860868434245454e-05,
+          "max": 25.153615935109706,
+          "mean": 6.355604110536192,
+          "median": 0.9101269210746828,
+          "std": 9.572492820610169,
+          "var": 91.63261880063321,
+          "q25": 0.5908055302043591,
+          "q75": 5.12345930542378,
+          "count": 5
+        },
+        "gap_percent": {
+          "min": 128608.68434245454,
+          "max": 251536159351.09705,
+          "mean": 63556041105.361916,
+          "median": 9101269210.746828,
+          "std": 95724928206.10168,
+          "var": 9.163261880063321e+21,
+          "q25": 5908055302.0435915,
+          "q75": 51234593054.2378,
+          "count": 5
+        },
+        "computation_time": {
+          "min": 0.9136590957641602,
+          "max": 0.9538869857788086,
+          "mean": 0.9370508670806885,
+          "median": 0.9414401054382324,
+          "std": 0.015387857701206377,
+          "var": 0.0002367861646325764,
+          "q25": 0.9252560138702393,
+          "q75": 0.951012134552002,
+          "count": 5
+        },
+        "function_evaluations": {
+          "min": 100100.0,
+          "max": 100100.0,
+          "mean": 100100.0,
+          "median": 100100.0,
+          "std": 0.0,
+          "var": 0.0,
+          "q25": 100100.0,
+          "q75": 100100.0,
+          "count": 5
+        },
+        "best_run": {
+          "run": 4,
+          "best_fitness": 1.2860868434245454e-05,
+          "best_solution": null,
+          "computation_time": 0.951012134552002,
+          "convergence_history": [],
+          "gap_percent": 128608.68434245454,
+          "iterations": 0,
+          "function_evaluations": 100100,
+          "error": 1.2860868434245454e-05
+        },
+        "all_runs": [
+          {
+            "run": 1,
+            "best_fitness": 25.153615935109706,
+            "best_solution": null,
+            "computation_time": 0.9538869857788086,
+            "convergence_history": [],
+            "gap_percent": 251536159351.09705,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 25.153615935109706
+          },
+          {
+            "run": 2,
+            "best_fitness": 5.12345930542378,
+            "best_solution": null,
+            "computation_time": 0.9414401054382324,
+            "convergence_history": [],
+            "gap_percent": 51234593054.2378,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 5.12345930542378
+          },
+          {
+            "run": 3,
+            "best_fitness": 0.5908055302043591,
+            "best_solution": null,
+            "computation_time": 0.9136590957641602,
+            "convergence_history": [],
+            "gap_percent": 5908055302.0435915,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 0.5908055302043591
+          },
+          {
+            "run": 4,
+            "best_fitness": 1.2860868434245454e-05,
+            "best_solution": null,
+            "computation_time": 0.951012134552002,
+            "convergence_history": [],
+            "gap_percent": 128608.68434245454,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 1.2860868434245454e-05
+          },
+          {
+            "run": 5,
+            "best_fitness": 0.9101269210746828,
+            "best_solution": null,
+            "computation_time": 0.9252560138702393,
+            "convergence_history": [],
+            "gap_percent": 9101269210.746828,
+            "iterations": 0,
+            "function_evaluations": 100100,
+            "error": 0.9101269210746828
+          }
+        ]
+      }
+    ],
+    "final_best_fitness": {
+      "min": 1.2860868434245454e-05,
+      "max": 25.153615935109706,
+      "mean": 6.355604110536192,
+      "median": 0.9101269210746828,
+      "std": 9.572492820610169,
+      "var": 91.63261880063321,
+      "q25": 0.5908055302043591,
+      "q75": 5.12345930542378,
+      "count": 5
+    },
+    "final_best_run": {
+      "run": 4,
+      "best_fitness": 1.2860868434245454e-05,
+      "best_solution": null,
+      "computation_time": 0.951012134552002,
+      "convergence_history": [],
+      "gap_percent": 128608.68434245454,
+      "iterations": 0,
+      "function_evaluations": 100100,
+      "error": 1.2860868434245454e-05
+    },
+    "final_interpretation": null,
+    "timestamp": "2026-02-05T15:04:11.905074"
+  }
+]

@@ -90,7 +90,7 @@ class MetaMindAgent:
             logger.info(f"[Call #{self.call_count}] Requesting recommendation for: {problem_info.get('name', 'Unknown')}")
         
         try:
-            # Call Groq API with JSON mode
+
             response = self.client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -99,16 +99,14 @@ class MetaMindAgent:
                 model=self.model,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
-                response_format={"type": "json_object"}  # Enforce JSON output
+                response_format={"type": "json_object"} 
             )
             
-            # Extract and validate response
             response_text = response.choices[0].message.content
             
             if self.verbose:
                 logger.debug(f"Raw LLM response: {response_text[:200]}...")
             
-            # Parse and validate with Pydantic
             recommendation = LLMRecommendationSchema.model_validate_json(response_text)
             
             if self.verbose:
@@ -288,7 +286,6 @@ Format your response as JSON with these exact keys:
             raise
     
     def get_stats(self) -> Dict[str, Any]:
-        """Return statistics about agent usage."""
         return {
             "total_calls": self.call_count,
             "model": self.model,

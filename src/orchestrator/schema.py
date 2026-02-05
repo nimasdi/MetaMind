@@ -1,8 +1,3 @@
-"""
-Pydantic schemas for MetaMind orchestrator.
-Ensures structured LLM outputs and type safety.
-"""
-
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field, field_validator
 import logging

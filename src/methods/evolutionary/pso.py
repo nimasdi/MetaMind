@@ -22,7 +22,7 @@ class PSO(BaseMethod):
         'velocity_clamp': {'type': float, 'default': 0.5, 'range': (0.1, 1.0)} 
     }
     
-    def fit(self, problem_data, **kwargs):
+    def fit(self, problem_data, callback=None, **kwargs):
         self.start_time = time.time()
         self.log("PSO optimization started.")
         
@@ -119,6 +119,14 @@ class PSO(BaseMethod):
                         gbest_position = p['position'].copy()
             
             self.convergence_history.append(gbest_value)
+
+            if callback:
+                callback({
+                    'method': 'PSO',
+                    'iteration': t,
+                    'max_iterations': max_iter,
+                    'global_best_fitness': gbest_value,
+                })
             
             if t % (max_iter // 10 or 1) == 0:
                 self.log(f"Iteration {t}/{max_iter}: Best Fitness = {gbest_value:.4e}")

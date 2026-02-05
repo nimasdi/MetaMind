@@ -130,7 +130,7 @@ class AntColonyOptimization(BaseMethod):
 
 		return best_tour, best_length
 
-	def fit(self, problem_data, **kwargs):
+	def fit(self, problem_data, callback=None, **kwargs):
 		self.start_time = time.time()
 		self.log('ACO started')
 
@@ -206,6 +206,14 @@ class AntColonyOptimization(BaseMethod):
 					pheromone[b, a] += deposit
 
 			self.convergence_history.append(best_length)
+
+			if callback:
+				callback({
+					'method': 'AntColonyOptimization',
+					'iteration': iteration,
+					'max_iterations': max_iter,
+					'best_tour_length': best_length,
+				})
 
 			if iteration % max(1, max_iter // 10) == 0:
 				self.log(f"Iteration {iteration}/{max_iter} best length: {best_length:.6f}")

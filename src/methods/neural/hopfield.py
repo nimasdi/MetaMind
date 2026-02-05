@@ -48,7 +48,7 @@ class HopfieldNetwork(BaseMethod):
         self.patterns = None
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
-    def fit(self, problem_data, **kwargs):
+    def fit(self, problem_data, callback=None, **kwargs):
         self.start_time = time.time()
         self.log("Starting Hopfield Network training")
         

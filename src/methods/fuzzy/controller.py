@@ -124,7 +124,7 @@ class FuzzyController(BaseMethod):
             raise ValueError("Manual rule generation requires explicit rules list.")
         return rules
 
-    def fit(self, problem_data, **kwargs):
+    def fit(self, problem_data, callback=None, **kwargs):
         self.start_time = time.time()
         self.log("Starting Fuzzy Controller training...")
 
@@ -180,6 +180,13 @@ class FuzzyController(BaseMethod):
         self.end_time = time.time()
         self.results['training_time'] = self.end_time - self.start_time
         self.convergence_history.append(len(self.fuzzy_rules))
+
+        if callback:
+            callback({
+                'method': 'FuzzyController',
+                'status': 'complete',
+                'n_rules_generated': len(self.fuzzy_rules),
+            })
 
     def predict(self, input_value: float) -> float:
         if not hasattr(self, 'input_mfs') or not self.input_mfs:

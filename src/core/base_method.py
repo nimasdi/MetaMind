@@ -1,5 +1,6 @@
 import time
 from abc import ABC, abstractmethod
+from typing import Callable, Dict, Optional
 
 class BaseMethod(ABC):
 
@@ -47,7 +48,7 @@ class BaseMethod(ABC):
                     )
     
     @abstractmethod
-    def fit(self, problem_data, **kwargs):
+    def fit(self, problem_data, callback: Optional[callable[[Dict], None]] = None, **kwargs):
         pass
     
     def log(self, message: str):
@@ -75,6 +76,8 @@ class BaseMethod(ABC):
     
     def get_logs(self):
         return self.execution_log.copy()
+
+
     
     @classmethod
     def get_default_parameters(cls):

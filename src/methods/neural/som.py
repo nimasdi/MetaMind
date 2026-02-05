@@ -158,7 +158,7 @@ class SOM(BaseMethod):
             errors.append(error)
         return np.mean(errors)
     
-    def fit(self, problem_data, **kwargs):
+    def fit(self, problem_data, callback=None, **kwargs):
         self.start_time = time.time()
         
         if 'X' not in problem_data:
@@ -206,6 +206,15 @@ class SOM(BaseMethod):
             
             unique_bmus = len(np.unique(bmu_counts))
             self.bmu_history.append(unique_bmus)
+
+            if callback:
+                callback({
+                    'method': 'SOM',
+                    'epoch': epoch + 1,
+                    'max_epochs': self.max_epochs,
+                    'quantization_error': quantization_error,
+                    'active_neurons': unique_bmus
+                })
             
             if (epoch + 1) % max(1, self.max_epochs // 10) == 0:
                 self.log(

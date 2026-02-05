@@ -178,6 +178,29 @@ class Orchestrator:
         
         return problem_data
     
+    def _create_progress_callback(self, verbose=True):
+        def progress_reporter(metrics: Dict):
+            if not verbose:
+                return
+            
+            method = metrics.get('method', 'Unknown')
+            step = metrics.get('iteration') or metrics.get('epoch') 
+            total = metrics.get('max_iterations') or metrics.get('max_epochs')
+
+
+            status_parts = [f"[{method}] Step {step}/{total}"]
+
+            if 'best_fitness' in metrics:
+                status_parts.append(f"Fitness: {metrics['best_fitness']:.4f}")
+            if 'val_accuracy' in metrics:
+                status_parts.append(f"Val Acc: {metrics['val_accuracy']:.4f}")
+            if 'val_loss' in metrics:
+                status_parts.append(f"Loss: {metrics['val_loss']:.4f}")
+
+            print(" |".join(status_parts), end='\r', flush=True)
+
+        return progress_reporter
+    
     def solve(
         self,
         problem: BaseProblem,
@@ -216,9 +239,11 @@ class Orchestrator:
             recommendation.selected_method,
             recommendation.parameters
         )
+
+        my_callback = self._create_progress_callback(verbose=self.verbose)
         
         # Execute fit
-        method_instance.fit(problem_data)
+        method_instance.fit(problem_data, callback=my_callback)
         initial_results = method_instance.get_results()
         initial_metrics = problem.compute_metrics(initial_results.get('best_solution'))
         

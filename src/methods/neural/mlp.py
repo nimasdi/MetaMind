@@ -121,7 +121,7 @@ class MLP(BaseMethod):
         else:
             raise ValueError(f"Unknown optimizer: {optimizer_type}")
     
-    def fit(self, problem_data, **kwargs) :
+    def fit(self, problem_data, callback=None, **kwargs) :
 
         self.start_time = time.time()
         self.log("Starting MLP training")
@@ -213,6 +213,16 @@ class MLP(BaseMethod):
                         f"Train Loss={avg_train_loss:.4f}, "
                         f"Val Loss={val_loss:.4f}, "
                         f"Val Acc={val_accuracy:.4f}")
+                
+            if callback:
+                callback({
+                    'method': 'MLP',
+                    'epoch': epoch + 1,
+                    'max_epochs': self.parameters['max_epochs'],
+                    'train_loss': avg_train_loss,
+                    'val_loss': val_loss,
+                    'val_accuracy': val_accuracy
+                })
             
             if val_loss < best_val_loss:
                 best_val_loss = val_loss

@@ -42,7 +42,7 @@ class Perceptron(BaseMethod):
         self.n_features_ = None
 
 
-    def fit(self, problem_data, **kwargs):
+    def fit(self, problem_data, callback=None, **kwargs):
 
         self.start_time = time.time()
         self.log("Starting Perceptron training with Hebbian Learning")
@@ -135,6 +135,15 @@ class Perceptron(BaseMethod):
                     best_accuracy = test_acc
                     best_weights = self.weights.copy()
                     best_bias = self.bias_term
+
+            if callback:
+                callback({
+                    'method': 'Perceptron',
+                    'epoch': epoch + 1,
+                    'max_epochs': max_epochs,
+                    'train_accuracy': epoch_accuracy,
+                    'weight_norm': weight_norm,
+                })
 
             if (epoch + 1) % 10 == 0 or epoch == 0:
                 log_msg = (f"Epoch {epoch+1}/{max_epochs}: " f"Train Acc={epoch_accuracy:.4f}")

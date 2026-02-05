@@ -190,7 +190,7 @@ class GeneticProgramming(BaseMethod):
         except Exception as e:
             return (1e10,)
     
-    def fit(self, problem_data, **kwargs):
+    def fit(self, problem_data, callback=None, **kwargs):
         self.start_time = time.time()
         self.log("Starting Genetic Programming")
         
@@ -255,6 +255,16 @@ class GeneticProgramming(BaseMethod):
             best_ind = tools.selBest(population, 1)[0]
             best_fitness = best_ind.fitness.values[0]
             self.convergence_history.append(best_fitness)
+
+            if callback:
+                callback({
+                    'method': 'GeneticProgramming',
+                    'generation': gen + 1,
+                    'max_generations': generations,
+                    'best_fitness': best_fitness,
+                    'tree_depth': best_ind.height,
+                    'tree_size': len(best_ind)
+                })
             
             if gen % 10 == 0 or gen == generations - 1:
                 self.log(f"Generation {gen}/{generations}: Best Fitness = {best_fitness:.6f}")

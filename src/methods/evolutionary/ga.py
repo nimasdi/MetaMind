@@ -236,7 +236,7 @@ class GeneticAlgorithm(BaseMethod):
         sorted_indices = sorted(range(len(fitnesses)), key=lambda i: fitnesses[i])
         return [population[i].copy() for i in sorted_indices[:elitism_count]]
 
-    def fit(self, problem_data, **kwargs):
+    def fit(self, problem_data, callback=None, **kwargs):
         problem_size = kwargs.get('problem_size', len(problem_data))
         self.start_time = time.time()
         self.population = self.initialize_population(problem_size)
@@ -295,6 +295,16 @@ class GeneticAlgorithm(BaseMethod):
                 )
 
             self.population = new_population
+
+            if callback:
+                callback({
+                    'method': 'GeneticAlgorithm',
+                    'iteration': generation + 1,
+                    'max_iterations': self.parameters['generations'],
+                    'current_fitness': current_best,
+                    'best_fitness': self.best_fitness,
+                    'current_generation_best': current_best,
+                })
 
         final_fitnesses = [self.evaluate_fitness(ind, problem_data) for ind in self.population]
         final_best = min(final_fitnesses)

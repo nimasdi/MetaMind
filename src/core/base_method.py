@@ -48,7 +48,7 @@ class BaseMethod(ABC):
                     )
     
     @abstractmethod
-    def fit(self, problem_data, callback: Optional[callable[[Dict], None]] = None, **kwargs):
+    def fit(self, problem_data, callback: Optional[Callable[[Dict], None]] = None, **kwargs):
         pass
     
     def log(self, message: str):

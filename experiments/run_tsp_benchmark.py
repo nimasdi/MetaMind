@@ -25,7 +25,7 @@ from src.methods.neural.hopfield import HopfieldNetwork
 from src.methods.neural.som import SOM
 from src.methods.fuzzy.controller import FuzzyController
 from src.orchestrator.agent import MetaMindAgent
-from src.utils.logging import setup_logger
+from src.utils.logging import setup_logger, get_experiment_logger, standard_progress_callback
 from src.utils.metrics import compute_statistics , compute_gap_percentage
 from src.utils.plotting import plot_convergence, plot_comparison_table , plot_box_comparison
 
@@ -123,7 +123,7 @@ def run_single_experiment(method, problem, run_number):
     start_time = time.time()
     
     try:
-        result = method.fit(problem)
+        result = method.fit(problem, callback=standard_progress_callback)
         
         computation_time = time.time() - start_time
         

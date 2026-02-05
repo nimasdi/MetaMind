@@ -29,7 +29,7 @@ from src.orchestrator.agent import MetaMindAgent
 from src.utils.preprocessing import preprocess_titanic
 
 # Import Utilities
-from src.utils.logging import get_experiment_logger
+from src.utils.logging import get_experiment_logger, standard_progress_callback
 from src.utils.plotting import plot_box_comparison, plot_convergence
 
 # Import Methods
@@ -279,7 +279,7 @@ def run_classification_benchmark():
 
             start_time = time.time()
             try:
-                method.fit(fit_data)
+                method.fit(fit_data, callback=standard_progress_callback)
                 exec_time = time.time() - start_time
                 
                 # Capture Convergence

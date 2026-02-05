@@ -25,7 +25,7 @@ from src.problems.clustering import IrisProblem, MallCustomersProblem, Synthetic
 from src.orchestrator.agent import MetaMindAgent
 
 # Import Utilities
-from src.utils.logging import get_experiment_logger
+from src.utils.logging import get_experiment_logger, standard_progress_callback
 from src.utils.plotting import plot_box_comparison, plot_convergence
 
 # Import Methods
@@ -275,7 +275,7 @@ def run_clustering_benchmark():
                     if MethodClass == FuzzyController:
                         fit_data.update({'input_range': (np.min(problem.X), np.max(problem.X)), 'output_range': (0,1)})
                         
-                    method.fit(fit_data)
+                    method.fit(fit_data, callback=standard_progress_callback)
                     exec_time = time.time() - start_time
                     
                     # Capture Convergence History

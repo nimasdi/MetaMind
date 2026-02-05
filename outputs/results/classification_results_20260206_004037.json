@@ -1,0 +1,155 @@
+[
+    {
+        "Problem": "Titanic",
+        "Session": 1,
+        "Loop_Stage": "Initial",
+        "Method": "MLP",
+        "Parameters": {
+            "hidden_layers": [
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.0005,
+            "max_epochs": 200,
+            "batch_size": 16,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "Accuracy": 0.7686567164179104,
+        "F1_Score": 0.6804123711340206,
+        "AUC": 0.8176234349161352,
+        "Recall": 0.6470588235294118,
+        "Time": 11.815375089645386,
+        "Timestamp": "2026-02-06T00:41:02.755803"
+    },
+    {
+        "Problem": "Titanic",
+        "Session": 1,
+        "Loop_Stage": "Feedback",
+        "Method": "MLP",
+        "Parameters": {
+            "hidden_layers": [
+                64,
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.0008,
+            "max_epochs": 250,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 25,
+            "random_state": 404
+        },
+        "Accuracy": 0.7985074626865671,
+        "F1_Score": 0.7032967032967034,
+        "AUC": 0.8055752421450508,
+        "Recall": 0.6274509803921569,
+        "Time": 7.135412931442261,
+        "Timestamp": "2026-02-06T00:41:47.438464"
+    },
+    {
+        "Problem": "Titanic",
+        "Session": 2,
+        "Loop_Stage": "Initial",
+        "Method": "MLP",
+        "Parameters": {
+            "hidden_layers": [
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.0005,
+            "max_epochs": 200,
+            "batch_size": 16,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "Accuracy": 0.753731343283582,
+        "F1_Score": 0.6666666666666666,
+        "AUC": 0.819040869359792,
+        "Recall": 0.6470588235294118,
+        "Time": 9.940837144851685,
+        "Timestamp": "2026-02-06T00:42:10.490051"
+    },
+    {
+        "Problem": "Titanic",
+        "Session": 2,
+        "Loop_Stage": "Feedback",
+        "Method": "MLP",
+        "Parameters": {
+            "hidden_layers": [
+                64,
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.001,
+            "max_epochs": 300,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "Accuracy": 0.7985074626865671,
+        "F1_Score": 0.7096774193548387,
+        "AUC": 0.8190408693597921,
+        "Recall": 0.6470588235294118,
+        "Time": 5.63141131401062,
+        "Timestamp": "2026-02-06T00:42:47.118474"
+    },
+    {
+        "Problem": "Titanic",
+        "Session": 3,
+        "Loop_Stage": "Initial",
+        "Method": "MLP",
+        "Parameters": {
+            "hidden_layers": [
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.0005,
+            "max_epochs": 200,
+            "batch_size": 16,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "Accuracy": 0.7761194029850746,
+        "F1_Score": 0.6739130434782609,
+        "AUC": 0.8176234349161351,
+        "Recall": 0.6078431372549019,
+        "Time": 10.1395742893219,
+        "Timestamp": "2026-02-06T00:43:07.708512"
+    },
+    {
+        "Problem": "Titanic",
+        "Session": 3,
+        "Loop_Stage": "Feedback",
+        "Method": "MLP",
+        "Parameters": {
+            "hidden_layers": [
+                64,
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.001,
+            "max_epochs": 250,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 25,
+            "random_state": 404
+        },
+        "Accuracy": 0.8059701492537313,
+        "F1_Score": 0.7111111111111111,
+        "AUC": 0.7956532010394519,
+        "Recall": 0.6274509803921569,
+        "Time": 7.83947491645813,
+        "Timestamp": "2026-02-06T00:43:43.099446"
+    }
+]

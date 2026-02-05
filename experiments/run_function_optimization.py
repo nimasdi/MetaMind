@@ -28,7 +28,7 @@ from src.methods.evolutionary.pso import PSO
 from src.methods.evolutionary.ga import GeneticAlgorithm
 
 from src.orchestrator.agent import MetaMindAgent
-from src.utils.logging import setup_logger, get_experiment_logger
+from src.utils.logging import setup_logger, get_experiment_logger, standard_progress_callback
 from src.utils.metrics import compute_statistics, compute_gap_percentage
 from src.utils.plotting import plot_convergence, plot_multiple_convergence, plot_box_comparison
 
@@ -136,7 +136,7 @@ def run_single_experiment(method, problem, run_number, logger):
     try:
         problem_data = prepare_problem_data(problem)
         
-        result = method.fit(problem_data)
+        result = method.fit(problem_data, callback=standard_progress_callback)
         
         computation_time = time.time() - start_time
         

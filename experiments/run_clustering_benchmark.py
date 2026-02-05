@@ -104,11 +104,11 @@ def run_clustering_benchmark():
              # otherwise rely on internal logic but prefer our path if it matches standard format
              # For standard IrisProblem, we often rely on sklearn, but let's try to use the file if present
              iris.load_data(filepath=str(iris_path))
-             logger.info(f"✓ Loaded Dataset A: Iris from {iris_path}")
+             logger.info(f"[+] Loaded Dataset A: Iris from {iris_path}")
         else:
              # Fallback to internal sklearn load
              iris.load_data() 
-             logger.info("✓ Loaded Dataset A: Iris (sklearn fallback)")
+             logger.info("[+] Loaded Dataset A: Iris (sklearn fallback)")
              
         problems.append(iris)
         
@@ -126,7 +126,7 @@ def run_clustering_benchmark():
             mall = MallCustomersProblem()
             mall.load_data(filepath=str(mall_path))
             problems.append(mall)
-            logger.info(f"✓ Loaded Dataset B: Mall Customers from {mall_path}")
+            logger.info(f"[+] Loaded Dataset B: Mall Customers from {mall_path}")
         else:
             logger.warning(f"⚠ Mall Customers CSV not found at {mall_path}")
     except Exception as e:
@@ -137,7 +137,7 @@ def run_clustering_benchmark():
         synth = SyntheticClusteringProblem(n_clusters=5)
         synth.load_data(n_samples=500, n_features=5, cluster_std=1.0)
         problems.append(synth)
-        logger.info("✓ Generated Dataset C: Synthetic (500 samples, 5 features)")
+        logger.info("[+] Generated Dataset C: Synthetic (500 samples, 5 features)")
     except Exception as e:
         logger.error(f"Failed to generate Synthetic data: {e}")
 
@@ -205,8 +205,14 @@ def run_clustering_benchmark():
 
             # --- B. Execution ---
             MethodClass = get_method_class(rec.selected_method)
+            
+            # Fix parameter types (JSON returns lists for tuples)
+            current_params = rec.parameters.copy()
+            if 'map_size' in current_params and isinstance(current_params['map_size'], list):
+                current_params['map_size'] = tuple(current_params['map_size'])
+                
             # Ensure parameters are valid for the class
-            method = MethodClass(**rec.parameters)
+            method = MethodClass(**current_params)
             
             start_time = time.time()
             try:

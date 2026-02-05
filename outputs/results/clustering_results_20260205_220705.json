@@ -1,0 +1,380 @@
+[
+    {
+        "Problem": "Iris Clustering",
+        "Session": 1,
+        "Loop_Stage": "Initial",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.8,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.5,
+            "max_epochs": 500,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.36351789404779755,
+        "ARI": 0.3966261717788666,
+        "Time": 2.0357394218444824,
+        "Timestamp": "2026-02-05T22:07:24.888243"
+    },
+    {
+        "Problem": "Iris Clustering",
+        "Session": 1,
+        "Loop_Stage": "Feedback",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.5,
+            "max_epochs": 750,
+            "topology": "rectangular"
+        },
+        "Silhouette": 0.3212346888663399,
+        "ARI": 0.17771705784095432,
+        "Time": 3.261033058166504,
+        "Timestamp": "2026-02-05T22:07:45.062560"
+    },
+    {
+        "Problem": "Iris Clustering",
+        "Session": 2,
+        "Loop_Stage": "Initial",
+        "Method": "SOM",
+        "Parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.5,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.0,
+            "max_epochs": 500,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.36351789404779755,
+        "ARI": 0.3966261717788666,
+        "Time": 2.1048004627227783,
+        "Timestamp": "2026-02-05T22:07:54.858892"
+    },
+    {
+        "Problem": "Iris Clustering",
+        "Session": 2,
+        "Loop_Stage": "Feedback",
+        "Method": "SOM",
+        "Parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.3,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.0,
+            "max_epochs": 1000,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.31479170768598036,
+        "ARI": 0.17463707716885463,
+        "Time": 9.729931831359863,
+        "Timestamp": "2026-02-05T22:08:29.125835"
+    },
+    {
+        "Problem": "Iris Clustering",
+        "Session": 3,
+        "Loop_Stage": "Initial",
+        "Method": "SOM",
+        "Parameters": {
+            "map_size": [
+                2,
+                2
+            ],
+            "learning_rate_initial": 0.5,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.0,
+            "max_epochs": 500,
+            "topology": "rectangular"
+        },
+        "Silhouette": 0.38694104154427816,
+        "ARI": 0.4728177114181946,
+        "Time": 4.4396045207977295,
+        "Timestamp": "2026-02-05T22:08:44.906902"
+    },
+    {
+        "Problem": "Iris Clustering",
+        "Session": 3,
+        "Loop_Stage": "Feedback",
+        "Method": "SOM",
+        "Parameters": {
+            "map_size": [
+                4,
+                4
+            ],
+            "learning_rate_initial": 0.7,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.3594907958653329,
+        "ARI": 0.2632985913969773,
+        "Time": 3.1978352069854736,
+        "Timestamp": "2026-02-05T22:09:06.436967"
+    },
+    {
+        "Problem": "Mall Customer Segmentation",
+        "Session": 1,
+        "Loop_Stage": "Initial",
+        "Method": "SOM",
+        "Parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.8,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 500,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.3948151730284441,
+        "ARI": 0.0,
+        "Time": 2.8746798038482666,
+        "Timestamp": "2026-02-05T22:09:22.817133"
+    },
+    {
+        "Problem": "Mall Customer Segmentation",
+        "Session": 1,
+        "Loop_Stage": "Feedback",
+        "Method": "SOM",
+        "Parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.34250128032831584,
+        "ARI": 0.0,
+        "Time": 4.954697847366333,
+        "Timestamp": "2026-02-05T22:09:50.391349"
+    },
+    {
+        "Problem": "Mall Customer Segmentation",
+        "Session": 2,
+        "Loop_Stage": "Initial",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.8,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 500,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.391736670183977,
+        "ARI": 0.0,
+        "Time": 3.2344563007354736,
+        "Timestamp": "2026-02-05T22:10:21.468945"
+    },
+    {
+        "Problem": "Mall Customer Segmentation",
+        "Session": 2,
+        "Loop_Stage": "Feedback",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 1.5,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.3282872306231815,
+        "ARI": 0.0,
+        "Time": 7.362776041030884,
+        "Timestamp": "2026-02-05T22:10:58.840214"
+    },
+    {
+        "Problem": "Mall Customer Segmentation",
+        "Session": 3,
+        "Loop_Stage": "Initial",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.8,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 500,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.3909373917479627,
+        "ARI": 0.0,
+        "Time": 5.504642963409424,
+        "Timestamp": "2026-02-05T22:11:29.017708"
+    },
+    {
+        "Problem": "Mall Customer Segmentation",
+        "Session": 3,
+        "Loop_Stage": "Feedback",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.3253580306296158,
+        "ARI": 0.0,
+        "Time": 4.872932195663452,
+        "Timestamp": "2026-02-05T22:12:01.938613"
+    },
+    {
+        "Problem": "Synthetic Clustering (5 clusters)",
+        "Session": 1,
+        "Loop_Stage": "Initial",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                2,
+                3
+            ],
+            "learning_rate_initial": 0.5,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.0,
+            "max_epochs": 1000,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.5552453047641497,
+        "ARI": 0.893298532187951,
+        "Time": 19.28824472427368,
+        "Timestamp": "2026-02-05T22:12:50.545873"
+    },
+    {
+        "Problem": "Synthetic Clustering (5 clusters)",
+        "Session": 1,
+        "Loop_Stage": "Feedback",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                3,
+                4
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 1.5,
+            "max_epochs": 1200,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.24921903308560564,
+        "ARI": 0.5399350241365143,
+        "Time": 25.203890562057495,
+        "Timestamp": "2026-02-05T22:14:00.676695"
+    },
+    {
+        "Problem": "Synthetic Clustering (5 clusters)",
+        "Session": 2,
+        "Loop_Stage": "Initial",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                2,
+                3
+            ],
+            "learning_rate_initial": 0.5,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 5.0,
+            "max_epochs": 1000,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.5552453047641497,
+        "ARI": 0.893298532187951,
+        "Time": 14.574259281158447,
+        "Timestamp": "2026-02-05T22:14:39.150969"
+    },
+    {
+        "Problem": "Synthetic Clustering (5 clusters)",
+        "Session": 2,
+        "Loop_Stage": "Feedback",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.3,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 5.0,
+            "max_epochs": 1500,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.2014756072966998,
+        "ARI": 0.3616190414558285,
+        "Time": 33.15128207206726,
+        "Timestamp": "2026-02-05T22:15:35.509779"
+    },
+    {
+        "Problem": "Synthetic Clustering (5 clusters)",
+        "Session": 3,
+        "Loop_Stage": "Initial",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                2,
+                3
+            ],
+            "learning_rate_initial": 0.5,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.0,
+            "max_epochs": 1000,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.5586491849314713,
+        "ARI": 0.8968207900903864,
+        "Time": 12.499041080474854,
+        "Timestamp": "2026-02-05T22:15:59.821164"
+    },
+    {
+        "Problem": "Synthetic Clustering (5 clusters)",
+        "Session": 3,
+        "Loop_Stage": "Feedback",
+        "Method": "Self-Organizing Map (SOM)",
+        "Parameters": {
+            "map_size": [
+                3,
+                4
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 1.5,
+            "max_epochs": 1200,
+            "topology": "hexagonal"
+        },
+        "Silhouette": 0.2533016620994152,
+        "ARI": 0.541308081973149,
+        "Time": 15.327336072921753,
+        "Timestamp": "2026-02-05T22:16:50.382353"
+    }
+]

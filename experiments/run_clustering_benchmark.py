@@ -4,18 +4,16 @@ import json
 import time
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.metrics import (
     silhouette_score, davies_bouldin_score, calinski_harabasz_score,
     adjusted_rand_score, normalized_mutual_info_score
 )
-from sklearn.decomposition import PCA
 
-# Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -23,17 +21,23 @@ env_path = Path(__file__).parent / ".env"
 load_dotenv(env_path)
 
 # Import Framework Components
-from src.problems.clustering import ClusteringProblem, IrisProblem, MallCustomersProblem, SyntheticClusteringProblem
+from src.problems.clustering import IrisProblem, MallCustomersProblem, SyntheticClusteringProblem
 from src.orchestrator.agent import MetaMindAgent
+
+# Import Utilities
 from src.utils.logging import get_experiment_logger
+from src.utils.plotting import plot_box_comparison, plot_convergence
 
 # Import Methods
 from src.methods.neural.som import SOM
+from src.methods.neural.mlp import MLP
+from src.methods.neural.perceptron import Perceptron
+from src.methods.neural.hopfield import HopfieldNetwork
 from src.methods.evolutionary.ga import GeneticAlgorithm
+from src.methods.evolutionary.gp import GeneticProgramming
 from src.methods.evolutionary.pso import PSO
-# Assuming a generic wrapper or using the methods directly for clustering
-# Note: GA/PSO for clustering usually optimize centroids. 
-# If specific clustering implementations aren't in the methods, SOM is the primary CI clustering tool.
+from src.methods.evolutionary.aco import AntColonyOptimization
+from src.methods.fuzzy.controller import FuzzyController
 
 def get_method_class(method_name):
     """Maps LLM string selection to actual Python class."""
@@ -41,32 +45,42 @@ def get_method_class(method_name):
         'SOM': SOM, 'SelfOrganizingMap': SOM, 'Kohonen': SOM,
         'GA': GeneticAlgorithm, 'GeneticAlgorithm': GeneticAlgorithm,
         'PSO': PSO, 'ParticleSwarmOptimization': PSO,
-        # Add Fuzzy C-Means if available in src/methods/fuzzy
+        'Fuzzy': FuzzyController, 'FuzzyController': FuzzyController,
     }
-    # Default to SOM for clustering if unknown, as it's the standard CI method
-    return mapping.get(method_name, SOM) 
+    return mapping.get(method_name, SOM)
 
 def evaluate_clustering(X, labels, true_labels=None):
-    """
-    Computes clustering metrics as per project requirements.
-    """
-    n_labels = len(np.unique(labels))
+    """Computes clustering metrics safely."""
+    # [CRITICAL FIX]: SOM predict returns (bmu_indices, distances).
+    if isinstance(labels, tuple):
+        labels = labels[0]
+        
+    labels = np.array(labels).astype(int).ravel()
     
-    # metrics require > 1 cluster and < n_samples
-    if n_labels < 2 or n_labels >= len(X):
+    n_labels = len(np.unique(labels))
+    n_samples = len(X)
+
+    if n_labels < 2 or n_labels >= n_samples:
         return {
-            'silhouette': -1.0, 'davies_bouldin': float('inf'), 'calinski_harabasz': 0.0,
-            'ari': 0.0, 'nmi': 0.0, 'inertia': 0.0, 'n_clusters': n_labels
+            'silhouette': -1.0, 
+            'davies_bouldin': float('inf'), 
+            'calinski_harabasz': 0.0,
+            'ari': 0.0, 
+            'nmi': 0.0, 
+            'n_clusters': n_labels
         }
 
-    metrics = {
-        'silhouette': silhouette_score(X, labels),
-        'davies_bouldin': davies_bouldin_score(X, labels),
-        'calinski_harabasz': calinski_harabasz_score(X, labels),
-        'n_clusters': n_labels
-    }
+    try:
+        metrics = {
+            'silhouette': silhouette_score(X, labels),
+            'davies_bouldin': davies_bouldin_score(X, labels),
+            'calinski_harabasz': calinski_harabasz_score(X, labels),
+            'n_clusters': n_labels
+        }
+    except Exception as e:
+        print(f"Metric calculation error: {e}")
+        return {'silhouette': -1.0, 'davies_bouldin': float('inf'), 'n_clusters': n_labels}
     
-    # Metrics requiring ground truth
     if true_labels is not None:
         metrics['ari'] = adjusted_rand_score(true_labels, labels)
         metrics['nmi'] = normalized_mutual_info_score(true_labels, labels)
@@ -76,9 +90,87 @@ def evaluate_clustering(X, labels, true_labels=None):
         
     return metrics
 
+def print_llm_json_style(rec):
+    output = {
+        "problem_type": "clustering",
+        "selected_method": rec.selected_method,
+        "reasoning": rec.reasoning[:120] + "...", 
+        "parameters": rec.parameters,
+        "backup_method": rec.alternative_methods[0] if rec.alternative_methods else "None",
+        "confidence": rec.confidence
+    }
+    print("-" * 60)
+    print("LLM output format:")
+    print(json.dumps(output, indent=4))
+    print("-" * 60)
+
+def print_feedback_analysis(interpretation, metrics, previous_best):
+    print("\nLLM feedback output:")
+    print("## Results Analysis")
+    score = metrics.get('silhouette', -1)
+    imp_str = ""
+    if previous_best != -1.0:
+        diff = score - previous_best
+        imp_str = f"(Change: {diff:+.4f})"
+
+    print(f"The method achieved a Silhouette Score of {score:.4f} {imp_str}.")
+    print(f"Assessment: {interpretation.get('performance_assessment', 'N/A').upper()}")
+    print("### Observations:")
+    print(f"- {interpretation.get('performance_explanation', 'No explanation provided.')}")
+    print("### Recommendations:")
+    recs = interpretation.get('improvement_recommendations', [])
+    for i, r in enumerate(recs, 1):
+        print(f"{i}. {r.get('suggestion', 'N/A')}")
+    print(f"### Confidence in solution: {interpretation.get('confidence_assessment', 'N/A')}")
+    print("-" * 60)
+
+def plot_feedback_progress(df, plots_dir):
+    """Plots the trajectory of Silhouette scores from Initial -> Feedback."""
+    if df.empty: return
+    
+    plt.figure(figsize=(10, 6))
+    
+    # Filter only sessions that have both Initial and Feedback
+    sessions = df.groupby(['Problem', 'Session']).filter(lambda x: len(x) > 1)
+    
+    if sessions.empty:
+        print("No feedback iterations to plot.")
+        plt.close()
+        return
+
+    # Plot lines connecting Initial to Feedback for each session
+    sns.pointplot(
+        data=sessions, 
+        x='Loop_Stage', 
+        y='Silhouette', 
+        hue='Problem', 
+        markers='o', 
+        linestyles='-', 
+        dodge=True,
+        capsize=0.1
+    )
+    
+    plt.title("Feedback Progress: Improvement per Session")
+    plt.ylabel("Silhouette Score")
+    plt.xlabel("Execution Stage")
+    plt.grid(True, alpha=0.3)
+    
+    path = plots_dir / "clustering_feedback_progress.png"
+    plt.savefig(path)
+    plt.close()
+    print(f"Feedback progress plot saved to {path}")
+
 def run_clustering_benchmark():
-    # 1. Setup Logging & Environment
-    logger = get_experiment_logger("clustering_benchmark", str(project_root / "outputs" / "logs"))
+    # Setup Output
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_dir = project_root / "outputs" / "results"
+    plots_dir = project_root / "outputs" / "figures"
+    logs_dir = project_root / "outputs" / "logs"
+    
+    for d in [output_dir, plots_dir, logs_dir]:
+        d.mkdir(parents=True, exist_ok=True)
+
+    logger = get_experiment_logger("clustering_benchmark", str(logs_dir))
     logger.info("="*80)
     logger.info("CLUSTERING BENCHMARK STARTED")
     logger.info("="*80)
@@ -88,237 +180,214 @@ def run_clustering_benchmark():
         logger.error("GROQ_API_KEY not found in .env")
         return
 
-    agent = MetaMindAgent(api_key=api_key, verbose=True)
+    agent = MetaMindAgent(api_key=api_key, verbose=False)
     
-    # 2. Define Problems
+    # --- Load Problems ---
     problems = []
-    
-    # A. Iris (Validation)
     try:
-        # Check specific path first
-        iris_path = project_root / "data" / "clustering_dataset" / "Iris.csv"
-        
         iris = IrisProblem()
-        if iris_path.exists():
-             # Assuming load_data can take a filepath if implemented to do so, 
-             # otherwise rely on internal logic but prefer our path if it matches standard format
-             # For standard IrisProblem, we often rely on sklearn, but let's try to use the file if present
-             iris.load_data(filepath=str(iris_path))
-             logger.info(f"[+] Loaded Dataset A: Iris from {iris_path}")
-        else:
-             # Fallback to internal sklearn load
-             iris.load_data() 
-             logger.info("[+] Loaded Dataset A: Iris (sklearn fallback)")
-             
+        iris.load_data() 
         problems.append(iris)
-        
-    except Exception as e:
-        logger.error(f"Failed to load Iris: {e}")
+    except: pass
 
-    # B. Mall Customers
     try:
         mall_path = project_root / "data" / "clustering_dataset" / "Mall_Customers.csv"
-        # If file is lowercase
-        if not mall_path.exists():
-             mall_path = project_root / "data" / "clustering_dataset" / "mall_customers.csv"
-             
+        if not mall_path.exists(): mall_path = project_root / "data" / "clustering_dataset" / "mall_customers.csv"
         if mall_path.exists():
             mall = MallCustomersProblem()
             mall.load_data(filepath=str(mall_path))
             problems.append(mall)
-            logger.info(f"[+] Loaded Dataset B: Mall Customers from {mall_path}")
-        else:
-            logger.warning(f"⚠ Mall Customers CSV not found at {mall_path}")
-    except Exception as e:
-        logger.error(f"Failed to load Mall Customers: {e}")
+    except: pass
 
-    # C. Synthetic Data (Controlled)
     try:
         synth = SyntheticClusteringProblem(n_clusters=5)
         synth.load_data(n_samples=500, n_features=5, cluster_std=1.0)
         problems.append(synth)
-        logger.info("[+] Generated Dataset C: Synthetic (500 samples, 5 features)")
-    except Exception as e:
-        logger.error(f"Failed to generate Synthetic data: {e}")
+    except: pass
 
-    # 3. Experimental Loop
-    n_runs = 5
     all_results = []
-    
-    # Cache for API limit handling
-    recommendation_cache = {} 
+    convergence_plots_data = {} # Store history for plotting later
 
+    # --- Benchmark Loop ---
     for problem in problems:
-        logger.info(f"\n{'='*60}")
         logger.info(f"BENCHMARKING PROBLEM: {problem.problem_name}")
-        logger.info(f"{'='*60}")
         
-        last_successful_rec = None
+        n_sessions = 3
         
-        for run_idx in range(n_runs):
-            logger.info(f"\n--- Run {run_idx+1}/{n_runs} for {problem.problem_name} ---")
+        for session_idx in range(n_sessions):
+            print(f"\n>>> Session {session_idx+1}/{n_sessions} for {problem.problem_name}")
             
-            # --- A. LLM Selection ---
-            # Define available methods for clustering
+            # 1. Context Construction (Crucial for getting usable params)
             available_methods = {
                 'SOM': SOM.PARAM_SPECS,
-                # Include others if your GA/PSO classes have specific clustering modes
-                # Otherwise, SOM is the main one expected by the doc
+                'PSO': PSO.PARAM_SPECS,
+                'GA': GeneticAlgorithm.PARAM_SPECS,
+                'Fuzzy': FuzzyController.PARAM_SPECS
             }
-            
             problem_info = problem.get_info()
             
-            rec = None
+            # [CRITICAL] Hints to guide LLM away from "100 clusters" for 150 samples
+            context_hint = "Maximize Silhouette Score."
+            if "Iris" in problem.problem_name:
+                context_hint += " Dataset is small (150 samples). use VERY SMALL map_size (e.g. 2x2 or 3x3) to force distinct clusters."
+            elif "Mall" in problem.problem_name:
+                context_hint += " Target 5 distinct segments. Use small map_size (e.g. 3x3)."
+            elif "Synthetic" in problem.problem_name:
+                context_hint += " CRITICAL: Use map_size around (2,3) to match the 5 true clusters."
+            
             try:
-                # Check if we already have a cached decision for this problem from previous runs
-                # (Optional optimization, but strictly we should ask every time unless rate limited)
                 rec = agent.get_recommendation(
                     problem_info=problem_info,
                     available_methods=available_methods,
-                    context="Select the best clustering method. For Mall Customers use 4-6 clusters. Maximize Silhouette Score."
+                    context=context_hint
                 )
-                last_successful_rec = rec
-                recommendation_cache[problem.problem_name] = rec
-                logger.info(f"LLM Selected: {rec.selected_method} | Confidence: {rec.confidence}")
-                
             except Exception as e:
-                logger.error(f"LLM interaction failed: {e}")
-                if last_successful_rec:
-                    logger.warning("⚠️ API Limit Reached. Reusing cached recommendation.")
-                    rec = last_successful_rec
-                elif problem.problem_name in recommendation_cache:
-                    logger.warning("⚠️ API Limit Reached. Reusing recommendation from previous problem run.")
-                    rec = recommendation_cache[problem.problem_name]
-                else:
-                    # Hard fallback if LLM completely fails
-                    from src.core.types import LLMRecommendation
-                    logger.warning("⚠️ No cache available. Using Hardcoded Default (SOM).")
-                    rec = LLMRecommendation(
-                        selected_method="SOM",
-                        reasoning="Fallback due to API error",
-                        parameters=SOM.get_default_parameters(),
-                        confidence=0.0,
-                        alternative_methods=[],
-                        expected_performance="medium",
-                        warnings=["Using default fallback"]
-                    )
-
-            # --- B. Execution ---
-            MethodClass = get_method_class(rec.selected_method)
-            
-            # Fix parameter types (JSON returns lists for tuples)
-            current_params = rec.parameters.copy()
-            if 'map_size' in current_params and isinstance(current_params['map_size'], list):
-                current_params['map_size'] = tuple(current_params['map_size'])
-                
-            # Ensure parameters are valid for the class
-            method = MethodClass(**current_params)
-            
-            start_time = time.time()
-            try:
-                # Clustering fit usually takes just X
-                # But BaseMethod.fit expects a dict 'problem_data'
-                fit_data = {'X': problem.X}
-                if hasattr(problem, 'y') or hasattr(problem, 'true_labels'):
-                     # Pass true labels if available just in case method uses them for something (unlikely for unsupervised)
-                     fit_data['y'] = problem.true_labels 
-                
-                method.fit(fit_data)
-            except Exception as e:
-                logger.error(f"Method execution failed: {e}")
-                import traceback
-                traceback.print_exc()
+                logger.error(f"Agent error: {e}")
                 continue
-                
-            exec_time = time.time() - start_time
             
-            # --- C. Evaluation ---
-            try:
-                results = method.get_results()
+            print_llm_json_style(rec)
+            
+            # 2. Execution Loop
+            best_metrics_this_session = {'silhouette': -1.0}
+            current_rec = rec
+            max_feedback_loops = 1 
+            
+            for loop_i in range(max_feedback_loops + 1):
+                is_feedback_run = loop_i > 0
+                run_type = "FEEDBACK RUN" if is_feedback_run else "INITIAL RUN"
+                print(f"\n--- {run_type} (Attempt {loop_i+1}) ---")
+
+                MethodClass = get_method_class(current_rec.selected_method)
                 
-                # Extract labels (SOM might return them differently, standardized check)
-                labels = None
-                if 'labels' in results:
-                    labels = results['labels']
-                elif 'best_solution' in results:
-                    # If best_solution contains centroids, we need to predict labels
-                    # If best_solution contains labels, use them
-                    bs = results['best_solution']
-                    if hasattr(bs, 'shape') and bs.shape[0] == problem.X.shape[0]:
-                        labels = bs
-                    elif hasattr(method, 'predict'):
-                        labels = method.predict(problem.X)
+                # Parameter Fixes
+                params = current_rec.parameters.copy()
+                if 'map_size' in params and isinstance(params['map_size'], list):
+                    params['map_size'] = tuple(params['map_size'])
                 
-                if labels is None and hasattr(method, 'predict'):
-                     labels = method.predict(problem.X)
-                     
-                if labels is not None:
-                    metrics = evaluate_clustering(problem.X, labels, problem.true_labels)
-                    
-                    logger.info(f"Silhouette: {metrics['silhouette']:.4f}")
-                    if metrics['ari'] is not None:
-                        logger.info(f"ARI: {metrics['ari']:.4f}")
+                try:
+                    method = MethodClass(**params)
+                except: break
+                
+                start_time = time.time()
+                try:
+                    # Fit
+                    fit_data = {'X': problem.X} 
+                    if MethodClass == FuzzyController:
+                        fit_data.update({'input_range': (np.min(problem.X), np.max(problem.X)), 'output_range': (0,1)})
                         
-                    result_entry = {
-                        'problem': problem.problem_name,
-                        'run': run_idx + 1,
-                        'method': rec.selected_method,
-                        'parameters': rec.parameters,
-                        'metrics': metrics,
-                        'execution_time': exec_time,
-                        'timestamp': datetime.now().isoformat()
-                    }
-                    all_results.append(result_entry)
-                else:
-                    logger.error("Could not extract cluster labels from method.")
+                    method.fit(fit_data)
+                    exec_time = time.time() - start_time
+                    
+                    # Capture Convergence History
+                    if hasattr(method, 'convergence_history') and method.convergence_history:
+                        key = f"{problem.problem_name}_{session_idx}_{run_type}"
+                        convergence_plots_data[key] = method.convergence_history
 
-            except Exception as e:
-                logger.error(f"Evaluation failed: {e}")
-                import traceback
-                traceback.print_exc()
+                    # Predict
+                    labels = None
+                    if hasattr(method, 'predict'):
+                        labels = method.predict(problem.X)
+                        if isinstance(labels, tuple): labels = labels[0]
+                    
+                    if labels is None: break
 
-    # 4. Save Results & Plotting
-    output_dir = project_root / "outputs" / "results"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    plots_dir = project_root / "outputs" / "figures"
-    plots_dir.mkdir(parents=True, exist_ok=True)
+                    metrics = evaluate_clustering(problem.X, labels, problem.true_labels)
+                    print(f"Result: Silhouette={metrics['silhouette']:.4f} | Clusters={metrics['n_clusters']}")
+                    
+                    # Store Result
+                    all_results.append({
+                        'Problem': problem.problem_name,
+                        'Session': session_idx + 1,
+                        'Loop_Stage': 'Feedback' if is_feedback_run else 'Initial',
+                        'Method': current_rec.selected_method,
+                        'Parameters': params,
+                        'Silhouette': metrics['silhouette'],
+                        'ARI': metrics['ari'] if metrics['ari'] else 0.0,
+                        'Time': exec_time,
+                        'Timestamp': datetime.now().isoformat()
+                    })
 
-    # Save JSON
-    json_path = output_dir / f"clustering_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(json_path, 'w') as f:
-        json.dump(all_results, f, indent=4)
-    logger.info(f"Results saved to {json_path}")
-    
-    # Save CSV
+                    # 3. Interpret
+                    if loop_i < max_feedback_loops:
+                        interpretation = agent.interpret_results(
+                            problem_info=problem_info,
+                            execution_result={
+                                'best_fitness': metrics['silhouette'], 
+                                'execution_time': exec_time,
+                                'iterations': getattr(method, 'max_epochs', 0),
+                                'metrics': metrics
+                            },
+                            recommendation=current_rec.model_dump()
+                        )
+                        print_feedback_analysis(interpretation, metrics, best_metrics_this_session['silhouette'])
+                        
+                        if metrics['silhouette'] < 0.6 or interpretation.get('performance_assessment') == 'poor': 
+                            print(f"[Agent] Requesting parameter adjustments...")
+                            new_rec = agent.get_feedback_recommendation(
+                                problem_info=problem_info,
+                                available_methods=available_methods,
+                                previous_result={'best_fitness': metrics['silhouette'], 'metrics': metrics},
+                                previous_recommendation=current_rec.model_dump()
+                            )
+                            current_rec = new_rec
+                        else:
+                            print(f"[Agent] Performance is acceptable. Stopping feedback.")
+                            break
+                            
+                    best_metrics_this_session = metrics
+
+                except Exception as e:
+                    logger.error(f"Execution failed: {e}")
+                    break
+
+    # -----------------------------------------------------------------------------
+    # 3. Final Outputs & Visualization
+    # -----------------------------------------------------------------------------
     if all_results:
-        df_results = pd.DataFrame([{
-            'Problem': r['problem'],
-            'Method': r['method'],
-            'Run': r['run'],
-            'Silhouette': r['metrics']['silhouette'],
-            'DB_Index': r['metrics']['davies_bouldin'],
-            'CH_Index': r['metrics']['calinski_harabasz'],
-            'ARI': r['metrics']['ari'],
-            'Time': r['execution_time']
-        } for r in all_results])
+        # Save Data
+        df = pd.DataFrame(all_results)
+        df.to_csv(output_dir / "clustering_summary.csv", index=False)
+        with open(output_dir / f"clustering_results_{timestamp}.json", 'w') as f:
+            json.dump(all_results, f, indent=4, default=str)
         
-        csv_path = output_dir / "clustering_summary.csv"
-        df_results.to_csv(csv_path, index=False)
-        logger.info(f"Summary CSV saved to {csv_path}")
-        
-        # Plot: Silhouette Scores Box Plot
-        plt.figure(figsize=(12, 6))
-        sns.boxplot(data=df_results, x='Problem', y='Silhouette', hue='Method')
-        plt.title("Clustering Performance (Silhouette Score)")
-        plt.tight_layout()
-        plt.savefig(plots_dir / "clustering_silhouette_comparison.png")
-        logger.info(f"Plot saved to {plots_dir}")
+        # 1. Box Plot (Using Utility)
+        try:
+            box_data = {}
+            for (prob, stage), group in df.groupby(['Problem', 'Loop_Stage']):
+                box_data[f"{prob}\n({stage})"] = group['Silhouette'].tolist()
+            
+            plot_box_comparison(
+                data_dict=box_data,
+                title="Clustering Performance Distribution",
+                ylabel="Silhouette Score",
+                save_path=str(plots_dir / f"clustering_boxplot_{timestamp}.png"),
+                show=False
+            )
+        except Exception as e: logger.error(f"Boxplot error: {e}")
 
-        # Summary Print
-        print("\n" + "="*60)
-        print("CLUSTERING BENCHMARK SUMMARY")
-        print("="*60)
-        print(df_results.groupby(['Problem', 'Method'])[['Silhouette', 'DB_Index', 'ARI']].agg(['mean', 'std']).round(4))
+        # 2. Feedback Progress Plot (New Custom Plot)
+        try:
+            plot_feedback_progress(df, plots_dir)
+        except Exception as e: logger.error(f"Feedback plot error: {e}")
+
+        # 3. Convergence Plots (Using Utility)
+        try:
+            # Plot one representative convergence curve per problem
+            for prob in [p.problem_name for p in problems]:
+                # Find a key matching this problem
+                keys = [k for k in convergence_plots_data.keys() if prob in k and "Initial" in k]
+                if keys:
+                    history = convergence_plots_data[keys[0]]
+                    plot_convergence(
+                        history,
+                        title=f"Convergence: {prob}",
+                        ylabel="Quantization Error / Fitness",
+                        save_path=str(plots_dir / f"convergence_{prob.replace(' ', '_')}.png"),
+                        show=False
+                    )
+        except Exception as e: logger.error(f"Convergence plot error: {e}")
+
+    logger.info("BENCHMARK COMPLETE")
 
 if __name__ == "__main__":
     run_clustering_benchmark()

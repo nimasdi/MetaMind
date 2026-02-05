@@ -101,70 +101,69 @@ class PromptBuilder:
         
         system_prompt = f"""You are an expert Computational Intelligence (CI) Architect with deep knowledge of neural networks, fuzzy systems, and evolutionary algorithms.
 
-Your task is to SELECT THE BEST CI METHOD and its OPTIMAL PARAMETERS for a given problem.
+                            Your task is to SELECT THE BEST CI METHOD and its OPTIMAL PARAMETERS for a given problem.
 
-=== AVAILABLE CI METHODS & PARAMETER SPECIFICATIONS ===
+                            === AVAILABLE CI METHODS & PARAMETER SPECIFICATIONS ===
 
-{methods_info}
+                            {methods_info}
 
-=== YOUR DECISION FRAMEWORK ===
+                            === YOUR DECISION FRAMEWORK ===
 
-1. ANALYZE THE PROBLEM:
-   - Understand the problem type (optimization, classification, clustering, regression)
-   - Identify key characteristics (dimensionality, data size, time constraints, domain)
-   - Consider problem-specific challenges and requirements
+                            1. ANALYZE THE PROBLEM:
+                            - Understand the problem type (optimization, classification, clustering, regression)
+                            - Identify key characteristics (dimensionality, data size, time constraints, domain)
+                            - Consider problem-specific challenges and requirements
 
-2. METHOD SELECTION CRITERIA:
-   - Match problem characteristics to method strengths
-   - Consider computational budget (time, iterations)
-   - Evaluate scalability needs
-   - Account for problem structure (discrete vs continuous, linear vs non-linear)
+                            2. METHOD SELECTION CRITERIA:
+                            - Match problem characteristics to method strengths
+                            - Consider computational budget (time, iterations)
+                            - Evaluate scalability needs
+                            - Account for problem structure (discrete vs continuous, linear vs non-linear)
 
-3. PARAMETER TUNING STRATEGY:
-   - For EXPLORATION problems: Use larger populations, higher mutation/learning rates
-   - For EXPLOITATION problems: Use smaller populations, lower learning rates
-   - For HIGH-DIMENSIONAL problems: Increase mutation/exploration parameters
-   - For NOISY problems: Increase population/sample sizes
-   - For TIME-CONSTRAINED problems: Reduce iterations, increase population efficiency
+                            3. PARAMETER TUNING STRATEGY:
+                            - For EXPLORATION problems: Use larger populations, higher mutation/learning rates
+                            - For EXPLOITATION problems: Use smaller populations, lower learning rates
+                            - For HIGH-DIMENSIONAL problems: Increase mutation/exploration parameters
+                            - For NOISY problems: Increase population/sample sizes
+                            - For TIME-CONSTRAINED problems: Reduce iterations, increase population efficiency
 
-4. CONFIDENCE & ALTERNATIVES:
-   - Provide confidence level (0.0-1.0) based on problem-method fit
-   - Suggest 2-3 alternative methods that could also work
-   - Include backup strategies for quick parameter adjustment
+                            4. CONFIDENCE & ALTERNATIVES:
+                            - Provide confidence level (0.0-1.0) based on problem-method fit
+                            - Suggest 2-3 alternative methods that could also work
+                            - Include backup strategies for quick parameter adjustment
 
-=== PARAMETER NAMING CONVENTIONS ===
+                            === PARAMETER NAMING CONVENTIONS ===
 
-ACO: n_ants (swarm size), alpha (pheromone weight), beta (heuristic weight), evaporation_rate
-GA: population_size, crossover_rate, mutation_rate, selection (tournament/roulette/rank)
-GP: population_size, generations, max_depth, crossover_rate, mutation_rate
-PSO: n_particles, w (inertia), c1, c2 (social/cognitive), velocity_clamp
-FuzzyController: n_membership_functions, membership_type, defuzzification
-Hopfield: max_iterations, threshold, async_update
-MLP: hidden_layers (list), learning_rate, activation, max_epochs
-Perceptron: learning_rate, max_epochs, bias
-SOM: map_size (tuple), learning_rate_initial, max_epochs, topology
+                            ACO: n_ants (swarm size), alpha (pheromone weight), beta (heuristic weight), evaporation_rate
+                            GA: population_size, crossover_rate, mutation_rate, selection (tournament/roulette/rank)
+                            GP: population_size, generations, max_depth, crossover_rate, mutation_rate
+                            PSO: n_particles, w (inertia), c1, c2 (social/cognitive), velocity_clamp
+                            FuzzyController: n_membership_functions, membership_type, defuzzification
+                            Hopfield: max_iterations, threshold, async_update
+                            MLP: hidden_layers (list), learning_rate, activation, max_epochs
+                            Perceptron: learning_rate, max_epochs, bias
+                            SOM: map_size (tuple), learning_rate_initial, max_epochs, topology
 
-=== RESPONSE FORMAT ===
+                            === RESPONSE FORMAT ===
 
-You MUST respond with a valid JSON object following this structure:
-{{
-    "selected_method": "<METHOD_NAME>",
-    "reasoning": "<Detailed explanation of why this method is best>",
-    "parameters": {{<key>: <value>, ...}},
-    "confidence": <0.0-1.0>,
-    "alternative_methods": ["<METHOD2>", "<METHOD3>"],
-    "expected_performance": "<low/medium/high>",
-    "warnings": [<any concerns>],
-    "backup_strategy": "<Optional alternative approach if performance is poor>"
-}}
+                            You MUST respond with a valid JSON object following this structure:
+                            {{
+                                "selected_method": "<METHOD_NAME>",
+                                "reasoning": "<Detailed explanation of why this method is best>",
+                                "parameters": {{<key>: <value>, ...}},
+                                "confidence": <0.0-1.0>,
+                                "alternative_methods": ["<METHOD2>", "<METHOD3>"],
+                                "expected_performance": "<low/medium/high>",
+                                "warnings": [<any concerns>],
+                                "backup_strategy": "<Optional alternative approach if performance is poor>"
+                            }}
 
-IMPORTANT: ALL parameters in the JSON must be valid for the selected method AND within the specified ranges.
-"""
+                            IMPORTANT: ALL parameters in the JSON must be valid for the selected method AND within the specified ranges.
+                        """
         return system_prompt
     
     @staticmethod
     def _format_methods_info(available_methods: Dict[str, Dict[str, Any]]) -> str:
-        """Formats method specifications into readable text."""
         formatted = []
         
         for method_name, param_specs in available_methods.items():
@@ -254,45 +253,44 @@ IMPORTANT: ALL parameters in the JSON must be valid for the selected method AND 
         params_used = previous_recommendation.get('parameters', {})
         
         feedback_prompt = f"""
-FEEDBACK LOOP - PARAMETER TUNING ITERATION
+                                FEEDBACK LOOP - PARAMETER TUNING ITERATION
 
-Problem: {problem_info.get('name', 'Unknown')}
-Previously Selected Method: {method_used}
+                                Problem: {problem_info.get('name', 'Unknown')}
+                                Previously Selected Method: {method_used}
 
-=== PREVIOUS EXECUTION RESULTS ===
-Best Fitness: {current_best}
-Gap to Optimal: {gap_percentage}%
-Parameters Used: {json.dumps(params_used, indent=2)}
+                                === PREVIOUS EXECUTION RESULTS ===
+                                Best Fitness: {current_best}
+                                Gap to Optimal: {gap_percentage}%
+                                Parameters Used: {json.dumps(params_used, indent=2)}
 
-=== ANALYSIS & ADJUSTMENT STRATEGY ===
+                                === ANALYSIS & ADJUSTMENT STRATEGY ===
 
-Based on the execution results, determine if:
-1. Gap is LARGE (> 20%): Try to INCREASE exploration
-   - Increase mutation/learning rates
-   - Increase population/swarm size
-   - Decrease elitism/exploitation parameters
-   
-2. Gap is MODERATE (5-20%): Try to BALANCE exploration/exploitation
-   - Fine-tune rates moderately
-   - Consider different selection strategies
-   - Increase iterations if time allows
+                                Based on the execution results, determine if:
+                                1. Gap is LARGE (> 20%): Try to INCREASE exploration
+                                - Increase mutation/learning rates
+                                - Increase population/swarm size
+                                - Decrease elitism/exploitation parameters
+                                
+                                2. Gap is MODERATE (5-20%): Try to BALANCE exploration/exploitation
+                                - Fine-tune rates moderately
+                                - Consider different selection strategies
+                                - Increase iterations if time allows
 
-3. Gap is SMALL (< 5%): Try to REFINE solution
-   - Increase exploitation parameters
-   - Decrease learning rates (for gradient-based)
-   - Enable local search if available
+                                3. Gap is SMALL (< 5%): Try to REFINE solution
+                                - Increase exploitation parameters
+                                - Decrease learning rates (for gradient-based)
+                                - Enable local search if available
 
-PROVIDE an updated recommendation with:
-- Whether to CONTINUE with same method or SWITCH
-- Adjusted parameters with reasoning
-- Updated confidence level
-- Expected improvement from changes
-"""
+                                PROVIDE an updated recommendation with:
+                                - Whether to CONTINUE with same method or SWITCH
+                                - Adjusted parameters with reasoning
+                                - Updated confidence level
+                                - Expected improvement from changes
+                            """
         return feedback_prompt
 
 
 def get_default_method_mapping() -> Dict[str, str]:
-    """Returns mapping of method names to import paths."""
     return {
         "ACO": "src.methods.evolutionary.aco.AntColonyOptimization",
         "GA": "src.methods.evolutionary.ga.GeneticAlgorithm",

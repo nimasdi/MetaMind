@@ -153,12 +153,16 @@ class PromptBuilder:
                                 "parameters": {{<key>: <value>, ...}},
                                 "confidence": <0.0-1.0>,
                                 "alternative_methods": ["<METHOD2>", "<METHOD3>"],
-                                "expected_performance": "<low/medium/high>",
+                                "expected_performance": "<low|medium|high>",
                                 "warnings": [<any concerns>],
                                 "backup_strategy": "<Optional alternative approach if performance is poor>"
                             }}
 
-                            IMPORTANT: ALL parameters in the JSON must be valid for the selected method AND within the specified ranges.
+                            CRITICAL REQUIREMENTS:
+                            - "expected_performance" MUST be EXACTLY one of: "low", "medium", or "high" (no hyphens, no combinations)
+                            - ALL string values must use proper JSON escaping (escape quotes and newlines)
+                            - ALL parameters must be valid for the selected method AND within the specified ranges
+                            - Keep explanations concise to avoid JSON formatting issues
                         """
         return system_prompt
     
@@ -281,11 +285,24 @@ class PromptBuilder:
                                 - Decrease learning rates (for gradient-based)
                                 - Enable local search if available
 
-                                PROVIDE an updated recommendation with:
-                                - Whether to CONTINUE with same method or SWITCH
-                                - Adjusted parameters with reasoning
-                                - Updated confidence level
-                                - Expected improvement from changes
+                                === REQUIRED RESPONSE FORMAT ===
+
+                                You MUST respond with a valid JSON object following the EXACT same structure as before:
+                                {{
+                                    "selected_method": "<METHOD_NAME>",
+                                    "reasoning": "<Detailed explanation of parameter adjustments>",
+                                    "parameters": {{<adjusted_parameters>}},
+                                    "confidence": <0.0-1.0>,
+                                    "alternative_methods": ["<alternatives>"],
+                                    "expected_performance": "<low|medium|high>",
+                                    "warnings": ["<any concerns>"],
+                                    "backup_strategy": "<Optional fallback>"
+                                }}
+
+                                IMPORTANT: 
+                                - For "selected_method": Use the EXACT method name (e.g., "{method_used}") if continuing, or choose a different method if switching
+                                - For "expected_performance": MUST be exactly "low", "medium", or "high"
+                                - Provide adjusted parameters with clear reasoning for each change
                             """
         return feedback_prompt
 

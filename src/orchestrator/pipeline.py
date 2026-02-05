@@ -30,8 +30,8 @@ class Orchestrator:
     
     def __init__(
         self,
-        groq_api_key: str,
-        model: str = "llama-3.3-70b-versatile",
+        api_key: str,
+        model: str = "gemini-2.0-flash",
         verbose: bool = True,
         enable_feedback_loop: bool = True,
         max_feedback_iterations: int = 2
@@ -40,14 +40,14 @@ class Orchestrator:
         Initialize the Orchestrator.
         
         Args:
-            groq_api_key: Groq API key for LLM
+            api_key: Google API key for LLM
             model: LLM model identifier
             verbose: Enable logging
             enable_feedback_loop: Enable parameter tuning feedback loop
             max_feedback_iterations: Maximum feedback iterations
         """
         self.agent = MetaMindAgent(
-            api_key=groq_api_key,
+            api_key=api_key,
             model=model,
             verbose=verbose
         )
@@ -398,3 +398,7 @@ class Orchestrator:
             'agent_stats': self.agent.get_stats(),
             'execution_history': self.execution_history[-10:]  # Last 10
         }
+
+
+
+

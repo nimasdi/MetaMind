@@ -6,7 +6,8 @@ Uses JSON mode to ensure structured outputs matching LLMRecommendation dataclass
 import json
 import logging
 from typing import Dict, Any, Optional
-from groq import Groq
+import openai
+from openai import OpenAI
 
 from .schema import LLMRecommendationSchema
 from .prompts import PromptBuilder
@@ -24,22 +25,25 @@ class MetaMindAgent:
     def __init__(
         self,
         api_key: str,
-        model: str = "llama-3.3-70b-versatile",
+        model: str = "meta-llama/Meta-Llama-3.1-70B-Instruct",
         temperature: float = 0.3,
-        max_tokens: int = 2048,
+        max_tokens: int = 4096,
         verbose: bool = True
     ):
         """
         Initialize the MetaMind Agent.
         
         Args:
-            api_key: Groq API key
-            model: Model identifier (default: llama-3.3-70b-versatile)
+            api_key: DeepInfra API key
+            model: Model identifier (default: meta-llama/Meta-Llama-3.1-70B-Instruct)
             temperature: LLM temperature for creativity vs consistency
             max_tokens: Maximum response tokens
             verbose: Enable logging
         """
-        self.client = Groq(api_key=api_key)
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url="https://api.deepinfra.com/v1/openai",
+        )
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -90,24 +94,38 @@ class MetaMindAgent:
             logger.info(f"[Call #{self.call_count}] Requesting recommendation for: {problem_info.get('name', 'Unknown')}")
         
         try:
-
             response = self.client.chat.completions.create(
+                model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                model=self.model,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
-                response_format={"type": "json_object"} 
+                response_format={"type": "json_object"},
             )
             
             response_text = response.choices[0].message.content
             
             if self.verbose:
+                logger.debug(f"Raw LLM response length: {len(response_text)} chars")
                 logger.debug(f"Raw LLM response: {response_text[:200]}...")
             
-            recommendation = LLMRecommendationSchema.model_validate_json(response_text)
+            # Check for incomplete JSON (common signs of truncation)
+            if not response_text.strip().endswith('}'):
+                logger.warning("Response appears truncated (doesn't end with '}')")
+                logger.error(f"Full truncated response:\n{response_text}")
+                raise ValueError(
+                    f"LLM response appears truncated. Consider increasing max_tokens (currently {self.max_tokens}). "
+                    f"Response length: {len(response_text)} chars"
+                )
+            
+            try:
+                recommendation = LLMRecommendationSchema.model_validate_json(response_text)
+            except Exception as parse_error:
+                logger.error(f"Failed to parse/validate JSON response: {parse_error}")
+                logger.error(f"Full response text:\n{response_text}")
+                raise
             
             if self.verbose:
                 logger.info(
@@ -121,7 +139,7 @@ class MetaMindAgent:
             logger.error(f"Failed to parse JSON response: {e}")
             raise ValueError(f"LLM did not return valid JSON: {e}")
         except Exception as e:
-            logger.error(f"Groq API error: {e}")
+            logger.error(f"API error: {e}")
             raise
     
     def get_feedback_recommendation(
@@ -156,14 +174,14 @@ class MetaMindAgent:
         
         try:
             response = self.client.chat.completions.create(
+                model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": feedback_prompt}
                 ],
-                model=self.model,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
             
             response_text = response.choices[0].message.content
@@ -239,7 +257,7 @@ Provide a structured analysis with:
 
 6. **Next Steps**: What should be tried next?
 
-Format your response as JSON with these exact keys:
+Format your response as VALID JSON with these exact keys:
 {{
     "performance_assessment": "good|excellent|acceptable|poor",
     "performance_explanation": "...",
@@ -251,27 +269,39 @@ Format your response as JSON with these exact keys:
     "confidence_assessment": "HIGH|MEDIUM|LOW",
     "next_steps": ["step1", "step2", ...]
 }}
+
+IMPORTANT: Keep all text fields CONCISE and use proper JSON escaping. Avoid quotes within strings or use escaped quotes (\\")
 """
         
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
+                    {"role": "user", "content": prompt}
                 ],
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
+            
+            response_text = response.choices[0].message.content
             
             self.call_count += 1
             
-            # Parse the response
-            response_text = response.choices[0].message.content
-            interpretation = json.loads(response_text)
+            # Parse the response with better error handling
+            try:
+                interpretation = json.loads(response_text)
+            except json.JSONDecodeError as json_err:
+                logger.error(f"JSON decode error: {json_err}")
+                logger.debug(f"Raw response text: {response_text[:500]}...")
+                # Try to extract JSON if it's wrapped in markdown code blocks
+                if "```json" in response_text:
+                    json_start = response_text.find("```json") + 7
+                    json_end = response_text.find("```", json_start)
+                    response_text = response_text[json_start:json_end].strip()
+                    interpretation = json.loads(response_text)
+                else:
+                    raise json_err
             
             if self.verbose:
                 logger.info(

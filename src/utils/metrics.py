@@ -65,15 +65,16 @@ def wilcoxon_test(sample1: List[float], sample2: List[float]) -> Dict[str, Any]:
 
 
 def compute_gap_percentage(value: float, optimal: float) -> float:
-    # Handle near-zero optimal values
     if abs(optimal) < 1e-10:
         # If both are essentially zero, gap is 0
         if abs(value) < 1e-10:
             return 0.0
-        # Otherwise return a large but finite gap
-        return abs(value) * 1e10
+        # For zero-optimal problems, express absolute error as percentage of 1.0
+        # This gives more reasonable percentages for benchmark functions
+        return abs(value) * 100
     
-    return ((value - optimal) / abs(optimal)) * 100
+    # Standard relative percentage error for non-zero optimal values
+    return abs((value - optimal) / optimal) * 100
 
 
 def success_rate(values: List[float], threshold: float) -> float:

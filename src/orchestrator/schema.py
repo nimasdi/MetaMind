@@ -58,10 +58,29 @@ class LLMRecommendationSchema(BaseModel):
     @field_validator('expected_performance')
     @classmethod
     def validate_performance(cls, v: str) -> str:
-        """Ensure performance is valid level."""
+        """Ensure performance is valid level, with flexible mapping."""
+        v_lower = v.lower().strip()
+        
+        # Direct matches
         valid_levels = {'low', 'medium', 'high'}
-        if v.lower() not in valid_levels:
-            raise ValueError(f"Performance must be one of {valid_levels}")
+        if v_lower in valid_levels:
+            return v_lower
+        
+        # Map common variations to standard levels
+        performance_mapping = {
+            'medium-high': 'high',
+            'medium high': 'high',
+            'high-medium': 'high',
+            'low-medium': 'medium',
+            'medium-low': 'medium',
+            'very high': 'high',
+            'very low': 'low',
+        }
+        
+        if v_lower in performance_mapping:
+            return performance_mapping[v_lower]
+        
+        raise ValueError(f"Performance must be one of {valid_levels} (got: {v})")
         return v.lower()
     
     class Config:

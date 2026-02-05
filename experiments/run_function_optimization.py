@@ -102,7 +102,11 @@ def create_method_from_recommendation(recommendation):
     method_map = {
         'PSO': PSO,
         'ParticleSwarmOptimization': PSO,
+        'Particle Swarm Optimization': PSO,
+        'Particle Swarm Optimization (PSO)': PSO,
         'GeneticAlgorithm': GeneticAlgorithm,
+        'Genetic Algorithm': GeneticAlgorithm,
+        'Genetic Algorithm (GA)': GeneticAlgorithm,
         'GA': GeneticAlgorithm,
     }
     
@@ -519,7 +523,7 @@ def main():
     print("Initializing MetaMind Agent...")
     agent = MetaMindAgent(
         api_key=api_key,
-        model="llama-3.3-70b-versatile",
+        model="NousResearch/Hermes-3-Llama-3.1-70B",
         temperature=0.3,
         verbose=True
     )

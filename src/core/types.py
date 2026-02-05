@@ -49,6 +49,7 @@ class ExecutionResult:
     logs: List[Dict[str, Any]]
     success: bool
     error_message: Optional[str] = None
+    interpretation: Optional[Dict[str, Any]] = None
 
 
 @dataclass

@@ -307,6 +307,34 @@ class Orchestrator:
             error_message=None
         )
         
+        # Phase 6: LLM Interpretation and Recommendations
+        try:
+            if self.verbose:
+                logger.info("Starting result interpretation...")
+            
+            interpretation = self.agent.interpret_results(
+                problem_info=problem_info,
+                execution_result={
+                    'best_fitness': execution_result.best_fitness,
+                    'execution_time': execution_result.execution_time,
+                    'iterations': execution_result.iterations,
+                    'metrics': execution_result.metrics
+                },
+                recommendation=final_recommendation
+            )
+            
+            execution_result.interpretation = interpretation
+            
+            if self.verbose:
+                logger.info(
+                    f"Interpretation complete: "
+                    f"{interpretation.get('performance_assessment')} "
+                    f"({interpretation.get('confidence_assessment')} confidence)"
+                )
+        except Exception as e:
+            logger.warning(f"Could not generate result interpretation: {e}")
+            # Continue without interpretation rather than failing
+        
         # Store in history
         self.execution_history.append({
             'problem': problem.problem_name,

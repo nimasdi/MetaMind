@@ -180,6 +180,113 @@ class MetaMindAgent:
             logger.error(f"Feedback recommendation failed: {e}")
             raise
     
+    def interpret_results(
+        self,
+        problem_info: Dict[str, Any],
+        execution_result: Dict[str, Any],
+        recommendation: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Step 6: Interpret execution results and provide analysis.
+        Analyzes performance, compares with expected, explains results,
+        and provides improvement recommendations.
+        
+        Args:
+            problem_info: Problem information from problem.get_info()
+            execution_result: Execution result metrics
+            recommendation: The LLM recommendation that was used
+            
+        Returns:
+            Dictionary with interpretation including:
+            - performance_assessment: 'excellent'/'good'/'acceptable'/'poor'
+            - performance_explanation: Natural language explanation
+            - comparison_with_expected: How actual compares to expected
+            - improvement_recommendations: List of tuples (type, suggestion)
+            - confidence_assessment: Confidence in the solution
+            - next_steps: Suggested next steps
+        """
+        prompt = f"""
+You are an expert in computational intelligence methods. Analyze the following execution results and provide a comprehensive interpretation.
+
+## Problem Information:
+{json.dumps(problem_info, indent=2)}
+
+## Execution Result:
+- Method used: {recommendation.get('selected_method')}
+- Parameters: {json.dumps(recommendation.get('parameters', {}), indent=2)}
+- Best fitness: {execution_result.get('best_fitness')}
+- Expected performance: {recommendation.get('expected_performance')}
+- Computation time: {execution_result.get('execution_time'):.2f}s
+- Iterations: {execution_result.get('iterations')}
+- Gap from optimal: {execution_result.get('metrics', {}).get('gap_percentage', 'N/A')}%
+
+## Your Analysis Task:
+Provide a structured analysis with:
+
+1. **Performance Assessment**: Rate as 'excellent' (gap < 1%), 'good' (gap 1-5%), 'acceptable' (gap 5-15%), or 'poor' (gap > 15%)
+
+2. **Performance Explanation**: Explain the results in natural language:
+   - Was convergence smooth or erratic?
+   - Did the method find the solution quickly or slowly?
+   - Is the computation time reasonable?
+
+3. **Comparison with Expected**: How does actual performance compare to the expected performance?
+
+4. **Improvement Recommendations**: Provide specific, actionable suggestions:
+   - Parameter tuning suggestions (e.g., "increase population_size to 150")
+   - Alternative method recommendations (e.g., "try GA for better exploration")
+   - Hybrid approach suggestions (e.g., "combine with local search")
+
+5. **Confidence Assessment**: Rate confidence as 'HIGH' (solution is reliable), 'MEDIUM' (acceptable but could improve), or 'LOW' (needs improvement)
+
+6. **Next Steps**: What should be tried next?
+
+Format your response as JSON with these exact keys:
+{{
+    "performance_assessment": "good|excellent|acceptable|poor",
+    "performance_explanation": "...",
+    "comparison_with_expected": "...",
+    "improvement_recommendations": [
+        {{"type": "parameter_tuning|alternative_method|hybrid_approach", "suggestion": "..."}},
+        ...
+    ],
+    "confidence_assessment": "HIGH|MEDIUM|LOW",
+    "next_steps": ["step1", "step2", ...]
+}}
+"""
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                response_format={"type": "json_object"}
+            )
+            
+            self.call_count += 1
+            
+            # Parse the response
+            response_text = response.choices[0].message.content
+            interpretation = json.loads(response_text)
+            
+            if self.verbose:
+                logger.info(
+                    f"Result interpretation: {interpretation.get('performance_assessment')} "
+                    f"({interpretation.get('confidence_assessment')} confidence)"
+                )
+            
+            return interpretation
+            
+        except Exception as e:
+            logger.error(f"Result interpretation failed: {e}")
+            raise
+    
     def get_stats(self) -> Dict[str, Any]:
         """Return statistics about agent usage."""
         return {

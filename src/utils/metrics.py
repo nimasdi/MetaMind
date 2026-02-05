@@ -9,13 +9,23 @@ def compute_statistics(values: List[float]) -> Dict[str, float]:
     
     values = np.array(values)
     
+    # Handle NaN/inf values in statistics
+    with np.errstate(invalid='ignore'):
+        std_value = np.std(values)
+        var_value = np.var(values)
+    
+    if np.isnan(std_value):
+        std_value = 0.0
+    if np.isnan(var_value):
+        var_value = 0.0
+    
     return {
         'min': float(np.min(values)),
         'max': float(np.max(values)),
         'mean': float(np.mean(values)),
         'median': float(np.median(values)),
-        'std': float(np.std(values)),
-        'var': float(np.var(values)),
+        'std': float(std_value),
+        'var': float(var_value),
         'q25': float(np.percentile(values, 25)),
         'q75': float(np.percentile(values, 75)),
         'count': len(values)
@@ -55,8 +65,13 @@ def wilcoxon_test(sample1: List[float], sample2: List[float]) -> Dict[str, Any]:
 
 
 def compute_gap_percentage(value: float, optimal: float) -> float:
-    if optimal == 0:
-        return float('inf') if value != 0 else 0.0
+    # Handle near-zero optimal values
+    if abs(optimal) < 1e-10:
+        # If both are essentially zero, gap is 0
+        if abs(value) < 1e-10:
+            return 0.0
+        # Otherwise return a large but finite gap
+        return abs(value) * 1e10
     
     return ((value - optimal) / abs(optimal)) * 100
 

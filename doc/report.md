@@ -91,6 +91,240 @@ Evaluation is conducted on four standardized domains:
 
 ---
 
+# Section 2: Implementation Details
+
+## 2.1 System Architecture
+
+our architecture follows a modular, layered architecture designed for scalability, and intelligent method selection. The system comprises five main architectural layers:
+
+### Core Foundation Layer
+
+The foundation layer provides abstract base classes and common functionality:
+
+- **BaseMethod**: Abstract base class implementing parameter validation, execution tracking, and standardized method interface. All CI methods inherit from this class, ensuring consistency across implementations.
+- **BaseProblem**: Defines problem interface with standardized evaluation, validation, and metadata methods. Supports various problem types including optimization, classification, and clustering.
+- **Type Definitions**: Common data structures and type hints used throughout the system for consistency and type safety.
+
+### Problem Definition Layer
+
+This layer contains concrete problem implementations:
+
+- **TSP Problems**: Traveling Salesman Problem implementation with TSPLIB file support and random instance generation
+- **Classification Problems**: Machine learning classification tasks with automated preprocessing and evaluation metrics
+- **Continuous Optimization**: Function optimization problems including benchmark functions like Sphere, Rastrigin, and Rosenbrock
+- **Clustering Problems**: Unsupervised learning tasks with various distance metrics and validation indices
+
+### Method Implementation Layer
+
+The methods layer contains three categories of CI techniques:
+
+#### Evolutionary Methods
+- **Genetic Algorithm (GA)**: Population-based optimization with multiple selection strategies, crossover operators, and mutation schemes
+- **Ant Colony Optimization (ACO)**: Swarm intelligence for combinatorial optimization with pheromone trail management
+- **Particle Swarm Optimization (PSO)**: Particle-based optimization with velocity and position updates
+
+#### Neural Network Methods
+- **Multi-Layer Perceptron (MLP)**: Deep learning with PyTorch backend, configurable architectures, and multiple optimizers
+- **Self-Organizing Maps (SOM)**: Unsupervised learning for dimensionality reduction and clustering
+- **Hopfield Networks**: Associative memory networks for pattern completion and optimization
+
+#### Fuzzy Logic Methods
+- **Fuzzy Controllers**: Rule-based systems with multiple membership function types and defuzzification strategies
+
+### Orchestration Layer
+
+The intelligent orchestration system consists of:
+
+- **MetaMindAgent**: LLM-based recommendation engine for method selection and parameter configuration
+- **Orchestrator Pipeline**: Central coordination engine managing method execution, result interpretation, and feedback loops containing the 7 steps in the project
+- **Schema Validation**: Pydantic-based validation ensuring structured LLM outputs and type safety
+- **Prompt Engineering**: Sophisticated prompt templates for effective LLM communication
+
+### Utility Layer
+
+Supporting utilities include:
+
+- **Logging System**: Comprehensive logging with configurable levels and structured output
+- **Metrics Calculation**: Performance evaluation metrics for different problem types
+- **Plotting Functions**: Visualization tools for convergence analysis and result presentation
+
+## 2.2 Method Implementations
+
+### 2.2.1 Evolutionary Algorithms
+
+#### Genetic Algorithm (GA)
+The GA implementation supports multiple genetic operators and selection strategies:
+
+**Key Features:**
+- Multiple selection methods (tournament, roulette wheel, rank-based)
+- Various crossover operators (PMX, OX, CX for permutation problems)
+- Adaptive mutation rates and elitism strategies
+- Convergence tracking and early stopping mechanisms
+
+**Parameter Specifications:**
+- Population size: 50-500 individuals
+- Generations: 100-2000 iterations
+- Crossover rate: 0.6-0.95
+- Mutation rate: 0.01-0.3
+- Tournament size: 2-10 (for tournament selection)
+
+#### Ant Colony Optimization (ACO)
+ACO implementation focuses on combinatorial optimization with sophisticated pheromone management:
+
+**Key Features:**
+- Dynamic pheromone trail updates with evaporation
+- Heuristic information integration (alpha/beta balance)
+- Optional local search improvement (2-opt)
+- Adaptive exploration vs exploitation
+
+**Parameter Specifications:**
+- Number of ants: 20-200
+- Alpha (pheromone importance): 0.5-2.0
+- Beta (heuristic importance): 1.0-5.0
+- Evaporation rate: 0.1-0.9
+
+#### Particle Swarm Optimization (PSO)
+PSO implementation with velocity clamping and boundary handling:
+
+**Key Features:**
+- Inertia weight decay strategies
+- Personal and global best tracking
+- Boundary constraint handling
+- Velocity clamping to prevent explosion
+
+### 2.2.2 Neural Network Methods
+
+#### Multi-Layer Perceptron (MLP)
+PyTorch-based implementation with comprehensive training features:
+
+**Key Features:**
+- Configurable architecture (hidden layers, activation functions)
+- Multiple optimizers (Adam, SGD, RMSprop)
+- Early stopping with validation monitoring
+- Automatic data preprocessing and scaling
+
+**Parameter Specifications:**
+- Hidden layers: Configurable list of layer sizes
+- Learning rate: 0.0001-0.01
+- Batch size: 16-128
+- Maximum epochs: 100-2000
+- Validation split: 0.1-0.3
+
+#### Self-Organizing Maps (SOM)
+Unsupervised learning implementation for clustering and visualization:
+
+**Key Features:**
+- Hexagonal and rectangular grid topologies
+- Multiple distance metrics (Euclidean, Manhattan)
+- Learning rate decay schedules
+- Neighborhood function adaptation
+
+### 2.2.3 Fuzzy Logic Methods
+
+#### Fuzzy Controller
+Comprehensive fuzzy inference system with multiple configuration options:
+
+**Key Features:**
+- Multiple membership function types (triangular, Gaussian, trapezoidal)
+- Wang-Mendel automatic rule generation
+- Various defuzzification methods (centroid, bisector, MOM, SOM)
+- Adaptive membership function tuning
+
+## 2.3 LLM Integration Approach
+
+### 2.3.1 Architecture Design
+
+The LLM integration follows a structured approach ensuring reliable and transparent method selection:
+
+#### Agent-Based Architecture
+- **MetaMindAgent**: Core LLM interface using Google's Gemini 2.5 Flash model
+- **Structured Output**: JSON mode enforcement with Pydantic validation
+- **Context Management**: Problem-specific prompt engineering with method specifications
+
+#### Prompt Engineering Strategy
+The system employs sophisticated prompt templates:
+
+```python
+# System Prompt Structure
+- Method catalog with parameter specifications
+- Performance characteristics and suitable problem types
+- Example configurations and best practices
+
+# User Prompt Structure  
+- Problem description with metadata
+- Additional context and constraints
+- Request for structured JSON recommendation
+```
+
+### 2.3.2 Recommendation Schema
+
+The LLM outputs follow a strict schema ensuring consistency:
+
+```python
+class LLMRecommendationSchema(BaseModel):
+    selected_method: str           # Method class name
+    reasoning: str                 # Detailed explanation
+    parameters: Dict[str, Any]     # Method-specific parameters
+    confidence: float              # Confidence score (0.0-1.0)
+    alternative_methods: List[str] # Backup options
+    expected_performance: str      # Performance expectation
+    warnings: List[str]           # Potential issues
+    backup_strategy: Optional[str] # Fallback approach
+```
+
+### 2.3.3 Feedback Loop Implementation
+
+The system implements intelligent parameter tuning through iterative feedback:
+
+#### Performance Analysis
+- Automatic result evaluation against expectations
+- Gap analysis comparing actual vs predicted performance
+- Convergence behavior assessment
+
+#### Adaptive Parameter Tuning
+- LLM-driven parameter adjustment based on execution results
+- Historical performance consideration
+- Multi-iteration refinement with configurable limits
+
+#### Context Preservation
+- Execution history tracking across iterations
+- Parameter evolution documentation
+- Performance trend analysis
+
+## 2.4 Challenges and Solutions
+
+### 2.4.1 LLM Reliability and Consistency
+
+**Challenge**: Ensuring consistent, valid recommendations from LLM responses.
+
+**Solution**: 
+- **Structured Output Enforcement**: JSON mode with strict schema validation using Pydantic
+- **Response Validation**: Multi-layer validation including syntax, semantics, and parameter bounds
+- **Fallback Mechanisms**: Default configurations and error recovery strategies
+- **Temperature Control**: Optimized temperature settings (0.3) balancing creativity and consistency
+
+### 2.4.2 Parameter Space Management
+
+**Challenge**: Managing vast parameter spaces across diverse CI methods.
+
+**Solution**:
+- **Standardized Parameter Specifications**: PARAM_SPECS dictionaries with type hints, ranges, and defaults
+- **Automatic Validation**: Runtime parameter checking with informative error messages
+- **Intelligent Defaults**: Method-specific default configurations based on literature and empirical testing
+- **Bounded Optimization**: Parameter ranges derived from theoretical constraints and practical experience
+
+### 2.4.3 Free Api key and rate limits
+
+**Challenge**: groq and gemini API have rate limits and so the biggest challenge was managing this effectively.
+
+**Solution**:
+- i got a paid api key.
+
+
+
+### The Big picture:
+
+![[system.png]]
 ---
 
 ## Section 3:  Setup

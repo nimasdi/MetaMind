@@ -1,0 +1,65 @@
+[
+    {
+        "problem_name": null,
+        "meethod": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.001,
+            "max_epochs": 300,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 30,
+            "random_state": 404
+        },
+        "score": 0.7032967032967034,
+        "metric_name": "F1",
+        "timestamp": "2026-02-06T16:28:03.751292"
+    },
+    {
+        "problem_name": null,
+        "meethod": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.001,
+            "max_epochs": 250,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "score": 0.6966292134831461,
+        "metric_name": "F1",
+        "timestamp": "2026-02-06T16:28:57.702271"
+    },
+    {
+        "problem_name": null,
+        "meethod": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.001,
+            "max_epochs": 250,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "score": 0.7032967032967034,
+        "metric_name": "F1",
+        "timestamp": "2026-02-06T16:30:25.225192"
+    }
+]

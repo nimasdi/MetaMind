@@ -40,6 +40,7 @@ from src.methods.neural.som import SOM
 from src.methods.fuzzy.controller import FuzzyController
 from src.methods.evolutionary.ga import GeneticAlgorithm
 from src.methods.evolutionary.pso import PSO
+from src.orchestrator.memory import MemoryManager
 
 def get_method_class(method_name):
     """Maps LLM string selection to actual Python class."""
@@ -155,11 +156,12 @@ def plot_feedback_progress(df, plots_dir):
     plt.close()
 
 def run_classification_benchmark():
-    # Setup Output Directories
+
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_dir = project_root / "outputs" / "results"
     plots_dir = project_root / "outputs" / "figures"
     logs_dir = project_root / "outputs" / "logs"
+    memory_dir = project_root / "outputs" / "memory"
     
     for d in [output_dir, plots_dir, logs_dir]:
         d.mkdir(parents=True, exist_ok=True)
@@ -205,6 +207,8 @@ def run_classification_benchmark():
 
     # --- 2. Benchmark Loop ---
     n_sessions = 3
+
+    memory_manager = MemoryManager(output_dir=memory_dir)
     
     for session_idx in range(n_sessions):
         print(f"\n>>> Session {session_idx+1}/{n_sessions} for Titanic Classification")
@@ -219,6 +223,12 @@ def run_classification_benchmark():
         
         problem_info = problem.get_info()
         problem_info['description'] = "Predict passenger survival (0/1). Imbalanced dataset (approx 60/40)."
+
+        # memory loading
+        memory_str = memory_manager.get_context_string(
+            problem_type="classification",
+            problem_name="Titanic",
+        )
         
         context_hint = (
             "Maximize F1-Score and AUC-ROC. on the Test set. "
@@ -228,6 +238,7 @@ def run_classification_benchmark():
             "1. Do NOT use large architectures. Keep hidden_layers small (e.g., [64, 32] or [32]). "
             "2. If performing Feedback: Do NOT add more layers. Instead, reduce learning_rate or increase regularization (dropout/weight decay). "
             "3. Large models will overfit and lower the Test F1-Score."
+            f"{memory_str}"
         )
         
         try:
@@ -315,6 +326,12 @@ def run_classification_benchmark():
                     'Timestamp': datetime.now().isoformat()
                 }
                 all_results.append(result_entry)
+
+                if is_feedback_run:
+                    memory_manager.save_memory(
+                        problem_type = "classification",
+                        entry=result_entry
+                    )
 
                 # Step 3: Interpret & Feedback
                 if loop_i < max_feedback_loops:

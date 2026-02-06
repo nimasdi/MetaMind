@@ -32,6 +32,8 @@ from src.utils.logging import setup_logger, get_experiment_logger, standard_prog
 from src.utils.metrics import compute_statistics, compute_gap_percentage
 from src.utils.plotting import plot_convergence, plot_multiple_convergence, plot_box_comparison
 
+from src.orchestrator.memory import MemoryManager
+
 
 def convert_to_serializable(obj):
     """Convert numpy types to native Python types for JSON serialization."""
@@ -49,7 +51,7 @@ def convert_to_serializable(obj):
         return obj
 
 
-def get_llm_recommendation(agent, problem):
+def get_llm_recommendation(agent, problem, memory_manager):
     """Get LLM recommendation for function optimization problem."""
     print(f"\n{'='*80}")
     print(f"Asking LLM for recommendation on {problem.problem_name}...")
@@ -61,6 +63,11 @@ def get_llm_recommendation(agent, problem):
         'PSO': PSO.PARAM_SPECS,
         'GeneticAlgorithm': GeneticAlgorithm.PARAM_SPECS,
     }
+
+    memory_str = memory_manager.get_context_string(
+        problem_type="continuous_optimization", 
+        problem_name=problem.problem_name
+    )
     
     try:
         recommendation = agent.get_recommendation(
@@ -69,6 +76,7 @@ def get_llm_recommendation(agent, problem):
             context=f"This is a continuous function optimization problem ({problem.function_name}). "
                     f"Dimension: {problem.dimension}. "
                     f"We need to find the global minimum efficiently."
+                    f"{memory_str}"
         )
         
         print(f"\nLLM Recommendation:")
@@ -191,7 +199,7 @@ def run_experiments_with_config(method_class, method_params, problem, n_runs, lo
     return results
 
 
-def run_agent_optimization(agent, problem, n_runs=10, enable_feedback=True, max_feedback_iterations=2, logger=None):
+def run_agent_optimization(agent, problem, memory_manager, n_runs=10, enable_feedback=True, max_feedback_iterations=2, logger=None):
     print(f"\n{'#'*80}")
     print(f"# Agent-Guided Optimization: {problem.problem_name}")
     print(f"# Function: {problem.function_name}, Dimension: {problem.dimension}")
@@ -203,6 +211,8 @@ def run_agent_optimization(agent, problem, n_runs=10, enable_feedback=True, max_
         'PSO': PSO.PARAM_SPECS,
         'GeneticAlgorithm': GeneticAlgorithm.PARAM_SPECS,
     }
+
+    recommendation = get_llm_recommendation(agent, problem, memory_manager)
     
     recommendation = get_llm_recommendation(agent, problem)
     if recommendation is None:
@@ -237,6 +247,18 @@ def run_agent_optimization(agent, problem, n_runs=10, enable_feedback=True, max_
     )
     all_iterations.append(iteration_summary)
     print_iteration_summary(iteration_summary, n_runs)
+
+    best_fitness = iteration_summary['best_fitness']['min']
+
+    memory_entry = {
+        "Problem": problem.problem_name,
+        "Method": recommendation.selected_method,
+        "Parameters": recommendation.parameters,
+        "Fitness": best_fitness, 
+        "Timestamp": datetime.now().isoformat()
+    }
+    print(f"   [Memory] Saving initial result (Fitness: {best_fitness:.6f})")
+    memory_manager.save_memory("continuous_optimization", memory_entry)
     
     # Step 6: Get LLM interpretation of initial results
     try:
@@ -354,6 +376,17 @@ def run_agent_optimization(agent, problem, n_runs=10, enable_feedback=True, max_
             )
             all_iterations.append(feedback_summary)
             print_iteration_summary(feedback_summary, n_runs)
+
+            fb_best_fitness = feedback_summary['best_fitness']['min']
+            fb_entry = {
+                "Problem": problem.problem_name,
+                "Method": feedback_recommendation.selected_method,
+                "Parameters": feedback_recommendation.parameters,
+                "Fitness": fb_best_fitness, 
+                "Timestamp": datetime.now().isoformat()
+            }
+            print(f"   [Memory] Saving feedback result (Fitness: {fb_best_fitness:.6f})")
+            memory_manager.save_memory("continuous_optimization", fb_entry)
             
             improvement = iteration_summary['best_fitness']['mean'] - feedback_summary['best_fitness']['mean']
             improvement_pct = (improvement / iteration_summary['best_fitness']['mean']) * 100 if iteration_summary['best_fitness']['mean'] != 0 else 0
@@ -561,6 +594,10 @@ def main():
     print(f"Feedback loop: {'ENABLED ✓' if enable_feedback else 'DISABLED'}")
     print(f"Max feedback iterations: {max_feedback_iterations}")
     print(f"{'='*80}\n")
+
+    memory_dir = project_root / "outputs" / "memory"
+    memory_manager = MemoryManager(output_dir=memory_dir)
+    print(f"Memory Manager initialized. Saving to: {memory_manager.output_dir.absolute()}")
     
     for func_name, dimension in benchmark_problems:
         try:
@@ -568,6 +605,7 @@ def main():
             
             result = run_agent_optimization(
                 agent, problem, 
+                memory_manager=memory_manager, 
                 n_runs=n_runs, 
                 enable_feedback=enable_feedback,
                 max_feedback_iterations=max_feedback_iterations,

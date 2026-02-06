@@ -28,9 +28,10 @@ from src.orchestrator.agent import MetaMindAgent
 from src.utils.logging import setup_logger, get_experiment_logger, standard_progress_callback
 from src.utils.metrics import compute_statistics , compute_gap_percentage
 from src.utils.plotting import plot_convergence, plot_comparison_table , plot_box_comparison
+from src.orchestrator.memory import MemoryManager
 
 
-def get_llm_recommendation(agent, problem):
+def get_llm_recommendation(agent, problem, memory_manager):
 
     print(f"\nAsking LLM for recommendation on {problem.problem_name}...")
 
@@ -58,6 +59,11 @@ def get_llm_recommendation(agent, problem):
             'FuzzyController': FuzzyController.PARAM_SPECS,
         }
     
+    memory_context = memory_manager.get_context_string(
+        problem_type="combinatorial_optimization", 
+        problem_name=problem.problem_name,
+        context=f"This is a TSP benchmark experiment. Minimize Total Distance.\n{memory_context}"
+    )
 
     try:
         recommendation = agent.get_recommendation(
@@ -318,6 +324,7 @@ def main():
     n_runs = 5  # Number of runs per method per problem
     output_dir = project_root / "outputs" / "results"
     figures_dir = project_root / "outputs" / "figures"
+    memory_dir = project_root / "outputs" / "memory"
     use_llm_selection = True  # Toggle LLM-based selection
     
     problems = []
@@ -360,6 +367,8 @@ def main():
     logger.info(f"  ✓ Generated random_50: {problem_50.n_cities} cities, LKH estimate={lkh_distance:.2f}")
     
     all_results = []
+
+    memory_manager = MemoryManager(output_dir=memory_dir)
     
     for problem in problems:
         print(f"\n{'=' * 100}")
@@ -369,7 +378,7 @@ def main():
         print(f"{'=' * 100}")
         
         if use_llm_selection:
-            recommendation = get_llm_recommendation(agent, problem)
+            recommendation = get_llm_recommendation(agent, problem, memory_manager)
             
             if recommendation:
                 # Run the recommended method
@@ -409,6 +418,22 @@ def main():
                             stats['llm_reasoning'] = recommendation.reasoning
                             stats['llm_expected_performance'] = recommendation.expected_performance
                             all_results.append(stats)
+
+                            best_fitness = stats['best_fitness']['min'] # min distance is best for TSP
+                            
+                            memory_entry = {
+                                "Problem": problem.problem_name,
+                                "Method": recommendation.selected_method,
+                                "Parameters": recommendation.parameters,
+                                "Fitness": best_fitness, 
+                                "Timestamp": datetime.now().isoformat()
+                            }
+
+                            print(f"   [Memory] Saving best result ({best_fitness:.2f}) to combinatorial history...")
+                            memory_manager.save_memory(
+                                problem_type="combinatorial_optimization",
+                                entry=memory_entry
+                            )
                 except Exception as e:
                     print(f"Error running recommended method: {e}")
         else:

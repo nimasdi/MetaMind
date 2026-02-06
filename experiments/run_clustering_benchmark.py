@@ -38,6 +38,7 @@ from src.methods.evolutionary.gp import GeneticProgramming
 from src.methods.evolutionary.pso import PSO
 from src.methods.evolutionary.aco import AntColonyOptimization
 from src.methods.fuzzy.controller import FuzzyController
+from src.orchestrator.memory import MemoryManager
 
 def get_method_class(method_name):
     """Maps LLM string selection to actual Python class."""
@@ -166,6 +167,7 @@ def run_clustering_benchmark():
     output_dir = project_root / "outputs" / "results"
     plots_dir = project_root / "outputs" / "figures"
     logs_dir = project_root / "outputs" / "logs"
+    memory_dir = project_root / "outputs" / "memory"
     
     for d in [output_dir, plots_dir, logs_dir]:
         d.mkdir(parents=True, exist_ok=True)
@@ -208,6 +210,8 @@ def run_clustering_benchmark():
     all_results = []
     convergence_plots_data = {} # Store history for plotting later
 
+    memory_manager = MemoryManager(output_dir=memory_dir)
+
     # --- Benchmark Loop ---
     for problem in problems:
         logger.info(f"BENCHMARKING PROBLEM: {problem.problem_name}")
@@ -225,6 +229,11 @@ def run_clustering_benchmark():
                 'Fuzzy': FuzzyController.PARAM_SPECS
             }
             problem_info = problem.get_info()
+
+            memroy_str = memory_manager.get_context_string(
+                problem_type ="clustering",
+                problem_name = problem.problem_name,
+            )
             
             # [CRITICAL] Hints to guide LLM away from "100 clusters" for 150 samples
             context_hint = "Maximize Silhouette Score."
@@ -234,6 +243,8 @@ def run_clustering_benchmark():
                 context_hint += " Target 5 distinct segments. Use small map_size (e.g. 3x3)."
             elif "Synthetic" in problem.problem_name:
                 context_hint += " CRITICAL: Use map_size around (2,3) to match the 5 true clusters."
+
+            context_hint += f"\n {memroy_str}"
             
             try:
                 rec = agent.get_recommendation(
@@ -295,7 +306,7 @@ def run_clustering_benchmark():
                     print(f"Result: Silhouette={metrics['silhouette']:.4f} | Clusters={metrics['n_clusters']}")
                     
                     # Store Result
-                    all_results.append({
+                    result_entry = {
                         'Problem': problem.problem_name,
                         'Session': session_idx + 1,
                         'Loop_Stage': 'Feedback' if is_feedback_run else 'Initial',
@@ -305,7 +316,14 @@ def run_clustering_benchmark():
                         'ARI': metrics['ari'] if metrics['ari'] else 0.0,
                         'Time': exec_time,
                         'Timestamp': datetime.now().isoformat()
-                    })
+                    }
+                    all_results.append(result_entry)
+
+                    if is_feedback_run:
+                        memory_manager.save_memory(
+                            problem_type = "clustering",
+                            entry=result_entry 
+                        )
 
                     # 3. Interpret
                     if loop_i < max_feedback_loops:

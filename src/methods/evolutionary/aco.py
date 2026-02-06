@@ -222,6 +222,7 @@ class AntColonyOptimization(BaseMethod):
 
 		self.results = {
 			'best_tour': best_tour,
+			'best_solution': best_tour,
 			'best_length': best_length,
 			'convergence_history': self.convergence_history.copy(),
 			'n_iterations': max_iter,

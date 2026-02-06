@@ -31,7 +31,7 @@ class Orchestrator:
     def __init__(
         self,
         api_key: str,
-        model: str = "gemini-2.0-flash",
+        model: str = "NousResearch/Hermes-3-Llama-3.1-70B",
         verbose: bool = True,
         enable_feedback_loop: bool = True,
         max_feedback_iterations: int = 2
@@ -110,73 +110,29 @@ class Orchestrator:
         method_name: str,
         parameters: Dict[str, Any]
     ) -> BaseMethod:
-        """
-        Instantiate a method with parameters.
-        
-        Args:
-            method_name: Name of the method
-            parameters: Parameter dictionary
-            
-        Returns:
-            Instantiated method instance
-            
-        Raises:
-            KeyError: If method not registered
-            ValueError: If parameters are invalid
-        """
         if method_name not in self.METHOD_REGISTRY:
             raise KeyError(f"Method '{method_name}' not registered. Available: {list(self.METHOD_REGISTRY.keys())}")
         
         method_class = self.METHOD_REGISTRY[method_name]
         
+        full_parameters = method_class.get_default_parameters()
+        full_parameters.update(parameters)
+        
         try:
-            instance = method_class(**parameters)
+            instance = method_class(**full_parameters)
             if self.verbose:
-                logger.info(f"Instantiated {method_name} with parameters: {parameters}")
+                logger.info(f"Instantiated {method_name} with parameters: {full_parameters}")
             return instance
         except Exception as e:
             logger.error(f"Failed to instantiate {method_name}: {e}")
             raise
     
-    def _prepare_problem_data(self, problem: BaseProblem) -> Dict[str, Any]:
-        """
-        Prepare problem data for method execution.
-        Different methods expect different data formats.
+    def _prepare_problem_data(self, problem: BaseProblem):
+        if self.verbose:
+            problem_type = problem.problem_type if hasattr(problem, 'problem_type') else 'unknown'
+            logger.info(f"Prepared problem data for {problem.problem_name} (type: {problem_type})")
         
-        Args:
-            problem: BaseProblem instance
-            
-        Returns:
-            Formatted problem data
-        """
-        problem_data = {}
-        
-        # Handle classification/clustering problems with training data
-        if hasattr(problem, 'get_train_data'):
-            try:
-                X_train, y_train = problem.get_train_data()
-                problem_data['X_train'] = X_train
-                problem_data['y_train'] = y_train
-                
-                if hasattr(problem, 'get_test_data'):
-                    X_test, y_test = problem.get_test_data()
-                    problem_data['X_test'] = X_test
-                    problem_data['y_test'] = y_test
-            except Exception as e:
-                logger.warning(f"Could not extract training data: {e}")
-        
-        # Handle optimization problems
-        if hasattr(problem, 'evaluate') and hasattr(problem, 'get_bounds'):
-            problem_data['objective_function'] = problem.evaluate
-            bounds = problem.get_bounds()
-            if bounds is not None:
-                problem_data['bounds'] = bounds
-        
-        # Include problem object itself as fallback
-        if not problem_data:
-            problem_data = problem
-        
-        return problem_data
+        return problem
     
     def _create_progress_callback(self, verbose=True):
         def progress_reporter(metrics: Dict):
@@ -378,6 +334,176 @@ class Orchestrator:
             )
         
         return execution_result, final_recommendation
+    
+    def multi_solve(
+        self,
+        problem: BaseProblem,
+        num_methods: int = 3,
+        context: Optional[str] = None
+    ) -> Tuple[ExecutionResult, Dict[str, Any], Dict[str, Any]]:
+        start_time = time.time()
+        
+        if self.verbose:
+            logger.info(
+                f"Starting multi_solve with {num_methods} methods for: "
+                f"{problem.problem_name}"
+            )
+        
+        # Phase 1: Get problem information
+        problem_info = problem.get_info()
+        available_methods = self.get_available_methods_specs()
+        
+        # Phase 2: Get multi-method recommendation from LLM
+        multi_recommendation = self.agent.get_multi_method_recommendation(
+            problem_info=problem_info,
+            available_methods=available_methods,
+            num_methods=num_methods,
+            context=context
+        )
+        
+        if self.verbose:
+            logger.info(
+                f"Selected methods: {', '.join(multi_recommendation.selected_methods)}"
+            )
+        
+        # Phase 3: Execute all methods
+        all_results = {}
+        all_execution_results = {}
+        
+        for method_name in multi_recommendation.selected_methods:
+            if self.verbose:
+                logger.info(f"Executing {method_name}...")
+            
+            try:
+                method_start = time.time()
+                
+                # Get parameters for this method
+                parameters = multi_recommendation.method_parameters.get(method_name, {})
+                
+                # Instantiate and execute method
+                problem_data = self._prepare_problem_data(problem)
+                method_instance = self._instantiate_method(method_name, parameters)
+                
+                my_callback = self._create_progress_callback(verbose=self.verbose)
+                method_instance.fit(problem_data, callback=my_callback)
+                
+                results = method_instance.get_results()
+                metrics = problem.compute_metrics(results.get('best_solution'))
+                
+                method_time = time.time() - method_start
+                
+                # Store execution details for LLM analysis
+                all_results[method_name] = {
+                    'best_fitness': metrics.get('fitness', float('nan')),
+                    'execution_time': method_time,
+                    'iterations': len(method_instance.convergence_history),
+                    'metrics': metrics,
+                    'success': True,
+                    'convergence_history': method_instance.convergence_history
+                }
+                
+                # Store full execution result
+                all_execution_results[method_name] = ExecutionResult(
+                    method_name=method_name,
+                    problem_name=problem.problem_name,
+                    best_solution=results.get('best_solution'),
+                    best_fitness=metrics.get('fitness', float('nan')),
+                    convergence_history=method_instance.convergence_history,
+                    execution_time=method_time,
+                    iterations=len(method_instance.convergence_history),
+                    parameters_used=parameters,
+                    metrics=metrics,
+                    logs=method_instance.execution_log,
+                    success=True,
+                    error_message=None
+                )
+                
+                if self.verbose:
+                    logger.info(
+                        f"{method_name} completed: fitness={metrics.get('fitness', 'N/A'):.4f}, "
+                        f"time={method_time:.2f}s"
+                    )
+                    
+            except Exception as e:
+                logger.error(f"Failed to execute {method_name}: {e}")
+                all_results[method_name] = {
+                    'best_fitness': float('inf'),
+                    'execution_time': 0.0,
+                    'iterations': 0,
+                    'metrics': {},
+                    'success': False,
+                    'error': str(e)
+                }
+                all_execution_results[method_name] = None
+        
+        # Phase 4: LLM analyzes all results and recommends the best
+        if self.verbose:
+            logger.info("Analyzing results with LLM...")
+        
+        analysis = self.agent.analyze_multi_method_results(
+            problem_info=problem_info,
+            execution_results=all_results
+        )
+        
+        # Phase 5: Select the best result based on LLM recommendation
+        best_method = analysis.recommended_method
+        best_execution_result = all_execution_results.get(best_method)
+        
+        if best_execution_result is None:
+            # Fallback: pick method with best fitness if LLM recommendation failed
+            successful_methods = {
+                m: r for m, r in all_execution_results.items() if r is not None
+            }
+            
+            if not successful_methods:
+                error_msg = "All methods failed to execute. Check problem data format and method requirements."
+                logger.error(error_msg)
+                raise RuntimeError(error_msg)
+            
+            best_method = min(
+                successful_methods.keys(),
+                key=lambda m: all_results[m].get('best_fitness', float('inf'))
+            )
+            best_execution_result = successful_methods[best_method]
+            logger.warning(
+                f"LLM recommended method {analysis.recommended_method} not available, "
+                f"using {best_method} instead"
+            )
+        
+        # Add multi-method analysis to the best result
+        best_execution_result.interpretation = {
+            'multi_method_analysis': analysis.model_dump(),
+            'all_method_results': {
+                method: {
+                    'fitness': res.get('best_fitness'),
+                    'time': res.get('execution_time'),
+                    'gap': res.get('metrics', {}).get('gap_percentage')
+                }
+                for method, res in all_results.items()
+            }
+        }
+        
+        total_time = time.time() - start_time
+        
+        # Store in history
+        self.execution_history.append({
+            'problem': problem.problem_name,
+            'mode': 'multi_method',
+            'methods': multi_recommendation.selected_methods,
+            'best_method': best_method,
+            'time': total_time,
+            'fitness': best_execution_result.best_fitness,
+            'timestamp': time.time()
+        })
+        
+        if self.verbose:
+            logger.info(
+                f"Multi-solve complete. Best method: {best_method}, "
+                f"Fitness: {best_execution_result.best_fitness:.4f}, "
+                f"Total time: {total_time:.2f}s"
+            )
+        
+        return best_execution_result, analysis.model_dump(), all_results
     
     def batch_solve(
         self,

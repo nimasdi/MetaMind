@@ -35,12 +35,30 @@ class PSO(BaseMethod):
         w_decay = params['w_decay']
         v_clamp_frac = params['velocity_clamp']
         
-        objective_function = problem_data.get('objective_function')
-        bounds = problem_data.get('bounds')
+        if hasattr(problem_data, 'evaluate'):
+            objective_function = problem_data.evaluate
+        elif hasattr(problem_data, 'get') and callable(problem_data.get):
+            objective_function = problem_data.get('objective_function')
+        else:
+            self.end_time = time.time()
+            raise ValueError("Problem must have an 'evaluate' method or be a dict with 'objective_function'.")
+        
+        if hasattr(problem_data, 'get_bounds'):
+            bounds_tuple = problem_data.get_bounds()
+            if isinstance(bounds_tuple, tuple) and len(bounds_tuple) == 2:
+                lower_bounds, upper_bounds = bounds_tuple
+                bounds = list(zip(lower_bounds, upper_bounds))
+            else:
+                bounds = bounds_tuple
+        elif hasattr(problem_data, 'get') and callable(problem_data.get):
+            bounds = problem_data.get('bounds')
+        else:
+            self.end_time = time.time()
+            raise ValueError("Problem must have a 'get_bounds' method or be a dict with 'bounds'.")
         
         if not callable(objective_function) or not bounds:
             self.end_time = time.time()
-            raise ValueError("problem_data must contain 'objective_function' (callable) and 'bounds' (list of tuples).")
+            raise ValueError("Could not extract callable objective_function and bounds from problem.")
         
         n_dimensions = len(bounds)
         search_ranges = np.array([b[1] - b[0] for b in bounds])
@@ -135,6 +153,7 @@ class PSO(BaseMethod):
         self.results = {
             'best_fitness': gbest_value,
             'best_position': gbest_position.tolist() if gbest_position is not None else None,
+            'best_solution': gbest_position.tolist() if gbest_position is not None else None,  # Alias for consistency
             'iterations_run': max_iter,
             'elapsed_time': self.end_time - self.start_time
         }

@@ -288,6 +288,7 @@ class GeneticProgramming(BaseMethod):
         
         self.results = {
             'best_individual': str(self.best_individual),
+            'best_solution': self.best_individual,
             'best_fitness': best_fitness,
             'final_mse': final_mse,
             'generations': generations,

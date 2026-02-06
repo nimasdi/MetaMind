@@ -109,19 +109,27 @@ class TSPProblem(BaseProblem):
                 self.distance_matrix[j, i] = dist
     
     def evaluate(self, tour):
-        if isinstance(tour, list):
-            tour = np.array(tour)
-        
-        tour = tour.astype(int)
-        
+        arr = np.array(tour)
+
+        # If a continuous vector (e.g., random-key encoding) is provided,
+        # convert to a permutation by sorting (argsort). Otherwise, treat
+        # the input as a permutation of city indices.
+        if arr.dtype.kind in ('f', 'c'):
+            perm = np.argsort(arr).astype(int)
+        else:
+            perm = arr.astype(int)
+
+        if len(perm) != self.n_cities:
+            raise ValueError(f"Tour length {len(perm)} does not match number of cities {self.n_cities}")
+
         total_distance = 0.0
-        n = len(tour)
-        
+        n = len(perm)
+
         for i in range(n):
-            from_city = int(tour[i])
-            to_city = int(tour[(i + 1) % n])
+            from_city = int(perm[i])
+            to_city = int(perm[(i + 1) % n])
             total_distance += self.distance_matrix[from_city, to_city]
-        
+
         return float(total_distance)
     
     def validate_solution(self, tour):
@@ -139,6 +147,15 @@ class TSPProblem(BaseProblem):
     
     def get_dimension(self):
         return self.n_cities
+
+    def get_bounds(self):
+        # for the pso we need this function
+        if self.n_cities is None:
+            raise ValueError("n_cities must be set before getting bounds")
+
+        lower = np.zeros(self.n_cities)
+        upper = np.ones(self.n_cities)
+        return (lower, upper)
     
     def get_distance(self, city_i, city_j):
         return self.distance_matrix[city_i, city_j]

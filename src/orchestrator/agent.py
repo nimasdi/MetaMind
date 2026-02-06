@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional
 import openai
 from openai import OpenAI
 
-from .schema import LLMRecommendationSchema
+from .schema import LLMRecommendationSchema, MultiMethodRecommendationSchema, MultiMethodResultAnalysisSchema
 from .prompts import PromptBuilder
 
 
@@ -109,6 +109,7 @@ class MetaMindAgent:
             
             if self.verbose:
                 logger.debug(f"Raw LLM response length: {len(response_text)} chars")
+                print(f"\n{'='*60}\nLLM MULTI-METHOD RECOMMENDATION:\n{'='*60}\n{response_text}\n{'='*60}\n")
                 logger.debug(f"Raw LLM response: {response_text[:200]}...")
             
             # Check for incomplete JSON (common signs of truncation)
@@ -313,6 +314,163 @@ IMPORTANT: Keep all text fields CONCISE and use proper JSON escaping. Avoid quot
             
         except Exception as e:
             logger.error(f"Result interpretation failed: {e}")
+            raise
+    
+    def get_multi_method_recommendation(
+        self,
+        problem_info: Dict[str, Any],
+        available_methods: Dict[str, Dict[str, Any]],
+        num_methods: int = 3,
+        context: Optional[str] = None
+    ) -> MultiMethodRecommendationSchema:
+        self.call_count += 1
+        
+        if num_methods < 2 or num_methods > 5:
+            raise ValueError("num_methods must be between 2 and 5")
+        
+        system_prompt = PromptBuilder.build_system_prompt(available_methods)
+        multi_method_prompt = PromptBuilder.build_multi_method_prompt(
+            problem_info, 
+            available_methods, 
+            num_methods
+        )
+        
+        if context:
+            multi_method_prompt += f"\n\nAdditional Context: {context}"
+        
+        if self.verbose:
+            logger.info(
+                f"[Call #{self.call_count}] Requesting {num_methods} methods for: "
+                f"{problem_info.get('name', 'Unknown')}"
+            )
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": multi_method_prompt}
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                response_format={"type": "json_object"},
+            )
+            
+            response_text = response.choices[0].message.content
+            
+            if self.verbose:
+                logger.debug(f"Raw LLM response length: {len(response_text)} chars")
+            
+            # Check for truncation
+            if not response_text.strip().endswith('}'):
+                logger.warning("Response appears truncated")
+                raise ValueError(
+                    f"LLM response appears truncated. Consider increasing max_tokens. "
+                    f"Response length: {len(response_text)} chars"
+                )
+            
+            try:
+                recommendation = MultiMethodRecommendationSchema.model_validate_json(response_text)
+            except Exception as parse_error:
+                logger.error(f"Failed to parse/validate JSON response: {parse_error}")
+                logger.error(f"Full response text:\n{response_text}")
+                raise
+            
+            if self.verbose:
+                logger.info(
+                    f"Multi-method recommendation: {', '.join(recommendation.selected_methods)} "
+                    f"(confidence: {recommendation.confidence:.2f})"
+                )
+            
+            return recommendation
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON response: {e}")
+            raise ValueError(f"LLM did not return valid JSON: {e}")
+        except Exception as e:
+            logger.error(f"API error: {e}")
+            raise
+    
+    def analyze_multi_method_results(
+        self,
+        problem_info: Dict[str, Any],
+        execution_results: Dict[str, Dict[str, Any]]
+    ) -> MultiMethodResultAnalysisSchema:
+        """
+        Analyze results from multiple method executions and recommend the best.
+        This is the final step in multi-method orchestration.
+        
+        Args:
+            problem_info: Problem metadata
+            execution_results: Dictionary mapping method names to execution results
+                             Each result should contain: best_fitness, execution_time, 
+                             iterations, metrics, success
+            
+        Returns:
+            MultiMethodResultAnalysisSchema with recommended method and analysis
+            
+        Raises:
+            ValueError: If response cannot be parsed or validation fails
+            Exception: If API call fails
+        """
+        self.call_count += 1
+        
+        # Build analysis prompt
+        analysis_prompt = PromptBuilder.build_multi_result_analysis_prompt(
+            problem_info,
+            execution_results
+        )
+        
+        if self.verbose:
+            logger.info(
+                f"[Call #{self.call_count}] Analyzing results from "
+                f"{len(execution_results)} methods"
+            )
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "user", "content": analysis_prompt}
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                response_format={"type": "json_object"},
+            )
+            
+            response_text = response.choices[0].message.content
+            
+            if self.verbose:
+                logger.debug(f"Raw analysis response length: {len(response_text)} chars")
+                print(f"\n{'='*60}\nLLM RESULT ANALYSIS:\n{'='*60}\n{response_text}\n{'='*60}\n")
+            
+            # Check for truncation
+            if not response_text.strip().endswith('}'):
+                logger.warning("Response appears truncated")
+                raise ValueError(
+                    f"LLM response appears truncated. Response length: {len(response_text)} chars"
+                )
+            
+            try:
+                analysis = MultiMethodResultAnalysisSchema.model_validate_json(response_text)
+            except Exception as parse_error:
+                logger.error(f"Failed to parse/validate JSON response: {parse_error}")
+                logger.error(f"Full response text:\n{response_text}")
+                raise
+            
+            if self.verbose:
+                logger.info(
+                    f"Recommended method: {analysis.recommended_method} "
+                    f"(confidence: {analysis.confidence:.2f})"
+                )
+            
+            return analysis
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON response: {e}")
+            raise ValueError(f"LLM did not return valid JSON: {e}")
+        except Exception as e:
+            logger.error(f"API error: {e}")
             raise
     
     def get_stats(self) -> Dict[str, Any]:

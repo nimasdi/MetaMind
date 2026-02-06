@@ -17,6 +17,7 @@ class PromptBuilder:
             "category": MethodCategory.SWARM_INTELLIGENCE.value,
             "description": "Bio-inspired metaheuristic for combinatorial optimization. Simulates pheromone trails.",
             "best_for": ["TSP", "routing", "scheduling", "combinatorial problems"],
+            "problem_types": ["TSP", "combinatorial"],
             "strengths": ["Excellent for graph-based problems", "Fast convergence", "Distributed nature"],
             "weaknesses": ["Can get stuck in local optima", "Requires proper parameter tuning"],
         },
@@ -24,8 +25,9 @@ class PromptBuilder:
             "name": "Genetic Algorithm",
             "category": MethodCategory.EVOLUTIONARY.value,
             "description": "Population-based evolutionary algorithm using selection, crossover, and mutation.",
-            "best_for": ["optimization", "function fitting", "symbolic regression", "feature selection"],
-            "strengths": ["General-purpose", "Handles discrete and continuous", "Parallelizable"],
+            "best_for": ["TSP", "combinatorial optimization", "discrete optimization"],
+            "problem_types": ["TSP", "combinatorial", "discrete"],
+            "strengths": ["General-purpose", "Handles discrete problems well", "Parallelizable"],
             "weaknesses": ["Slow on high-dimensional problems", "Needs proper population sizing"],
         },
         "GP": {
@@ -33,22 +35,25 @@ class PromptBuilder:
             "category": MethodCategory.EVOLUTIONARY.value,
             "description": "Evolves tree-based mathematical expressions for symbolic regression.",
             "best_for": ["symbolic regression", "function approximation", "expression discovery"],
+            "problem_types": ["continuous", "regression"],
             "strengths": ["Interpretable results", "No need to specify form", "Automatic feature discovery"],
             "weaknesses": ["Slow", "Code bloat", "Requires large populations"],
         },
         "PSO": {
             "name": "Particle Swarm Optimization",
             "category": MethodCategory.SWARM_INTELLIGENCE.value,
-            "description": "Simulates social behavior of bird flocking or fish schooling.",
+            "description": "Simulates social behavior of bird flocking or fish schooling. ONLY for continuous optimization.",
             "best_for": ["continuous optimization", "function optimization", "multi-modal problems"],
+            "problem_types": ["continuous", "function_optimization"],
             "strengths": ["Fast convergence", "Few parameters", "Good for continuous spaces"],
-            "weaknesses": ["Can diverge", "Limited for discrete problems"],
+            "weaknesses": ["CANNOT handle discrete/combinatorial problems like TSP", "Can diverge"],
         },
         "FuzzyController": {
             "name": "Fuzzy Logic Controller",
             "category": MethodCategory.FUZZY_SYSTEM.value,
             "description": "Uses fuzzy sets and rules for classification and control.",
             "best_for": ["classification", "control systems", "time series", "decision support"],
+            "problem_types": ["classification"],
             "strengths": ["Interpretable rules", "Handles imprecision", "Robust"],
             "weaknesses": ["Requires domain knowledge", "Manual rule definition", "Not best for pure prediction"],
         },
@@ -57,6 +62,7 @@ class PromptBuilder:
             "category": MethodCategory.NEURAL_NETWORK.value,
             "description": "Recurrent neural network for pattern completion and associative memory.",
             "best_for": ["pattern recognition", "pattern completion", "memory retrieval", "optimization"],
+            "problem_types": ["pattern_recognition", "continuous"],
             "strengths": ["Associative memory", "Pattern completion", "Energy-based stability"],
             "weaknesses": ["Limited capacity", "Spurious attractors", "Slow convergence"],
         },
@@ -65,6 +71,7 @@ class PromptBuilder:
             "category": MethodCategory.NEURAL_NETWORK.value,
             "description": "Feedforward neural network with multiple hidden layers for supervised learning.",
             "best_for": ["classification", "regression", "function approximation", "non-linear fitting"],
+            "problem_types": ["classification", "regression"],
             "strengths": ["Universal approximator", "Powerful", "Well-understood"],
             "weaknesses": ["Black-box", "Needs lots of data", "Sensitive to initialization"],
         },
@@ -73,6 +80,7 @@ class PromptBuilder:
             "category": MethodCategory.NEURAL_NETWORK.value,
             "description": "Single-layer linear classifier using Hebbian learning.",
             "best_for": ["linear classification", "binary classification", "simple patterns"],
+            "problem_types": ["classification"],
             "strengths": ["Simple", "Fast", "Interpretable"],
             "weaknesses": ["Can only solve linear problems", "Single output", "Limited expressiveness"],
         },
@@ -81,6 +89,7 @@ class PromptBuilder:
             "category": MethodCategory.NEURAL_NETWORK.value,
             "description": "Unsupervised learning for dimensionality reduction and visualization.",
             "best_for": ["clustering", "visualization", "dimensionality reduction", "exploratory analysis"],
+            "problem_types": ["clustering"],
             "strengths": ["Interpretable visualization", "Topology preservation", "Unsupervised"],
             "weaknesses": ["Slow training", "Requires tuning neighborhood", "Limited for classification"],
         },
@@ -111,6 +120,7 @@ class PromptBuilder:
 
                             1. ANALYZE THE PROBLEM:
                             - Understand the problem type (optimization, classification, clustering, regression)
+                            - Identify if it's TSP/combinatorial OR continuous optimization OR classification/clustering
                             - Identify key characteristics (dimensionality, data size, time constraints, domain)
                             - Consider problem-specific challenges and requirements
 
@@ -148,17 +158,19 @@ class PromptBuilder:
 
                             You MUST respond with a valid JSON object following this structure:
                             {{
-                                "selected_method": "<METHOD_NAME>",
+                                "selected_method": "<METHOD_IDENTIFIER>",
                                 "reasoning": "<Detailed explanation of why this method is best>",
                                 "parameters": {{<key>: <value>, ...}},
                                 "confidence": <0.0-1.0>,
-                                "alternative_methods": ["<METHOD2>", "<METHOD3>"],
+                                "alternative_methods": ["<METHOD_ID2>", "<METHOD_ID3>"],
                                 "expected_performance": "<low|medium|high>",
                                 "warnings": [<any concerns>],
                                 "backup_strategy": "<Optional alternative approach if performance is poor>"
                             }}
 
                             CRITICAL REQUIREMENTS:
+                            - Use the SHORT METHOD IDENTIFIER (e.g., "ACO", "GA", "PSO", "MLP") NOT the full name
+                            - The method identifier MUST match EXACTLY what is shown after "METHOD IDENTIFIER:" above
                             - "expected_performance" MUST be EXACTLY one of: "low", "medium", or "high" (no hyphens, no combinations)
                             - ALL string values must use proper JSON escaping (escape quotes and newlines)
                             - ALL parameters must be valid for the selected method AND within the specified ranges
@@ -175,9 +187,11 @@ class PromptBuilder:
                 continue
                 
             desc = PromptBuilder.METHOD_DESCRIPTIONS[method_name]
-            formatted.append(f"\n### {desc['name']} ({method_name})")
+            formatted.append(f"\n### METHOD IDENTIFIER: '{method_name}' - {desc['name']}")
             formatted.append(f"Category: {desc['category']}")
             formatted.append(f"Description: {desc['description']}")
+            if 'problem_types' in desc:
+                formatted.append(f"**Supported Problem Types: {', '.join(desc['problem_types'])}**")
             formatted.append(f"Best for: {', '.join(desc['best_for'])}")
             formatted.append(f"Strengths: {', '.join(desc['strengths'])}")
             formatted.append(f"Weaknesses: {', '.join(desc['weaknesses'])}")
@@ -289,7 +303,7 @@ class PromptBuilder:
 
                                 You MUST respond with a valid JSON object following the EXACT same structure as before:
                                 {{
-                                    "selected_method": "<METHOD_NAME>",
+                                    "selected_method": "<METHOD_IDENTIFIER>",
                                     "reasoning": "<Detailed explanation of parameter adjustments>",
                                     "parameters": {{<adjusted_parameters>}},
                                     "confidence": <0.0-1.0>,
@@ -299,12 +313,144 @@ class PromptBuilder:
                                     "backup_strategy": "<Optional fallback>"
                                 }}
 
-                                IMPORTANT: 
-                                - For "selected_method": Use the EXACT method name (e.g., "{method_used}") if continuing, or choose a different method if switching
+                                CRITICAL REQUIREMENTS: 
+                                - Use SHORT METHOD IDENTIFIER (e.g., "{method_used}") NOT the full method name
+                                - For "selected_method": Use "{method_used}" if continuing, or choose a different method identifier if switching
                                 - For "expected_performance": MUST be exactly "low", "medium", or "high"
                                 - Provide adjusted parameters with clear reasoning for each change
                             """
         return feedback_prompt
+    
+    @staticmethod
+    def build_multi_method_prompt(
+        problem_info: Dict[str, Any],
+        available_methods: Dict[str, Dict[str, Any]],
+        num_methods: int = 3
+    ) -> str:
+        problem_context = PromptBuilder.build_problem_context(problem_info)
+        
+        prompt = f"""
+                    === MULTI-METHOD ORCHESTRATION MODE ===
+                    
+                    Instead of selecting ONE method, you will select {num_methods} DIFFERENT methods to run in parallel.
+                    This allows us to compare multiple approaches and determine which works best for this problem.
+                    
+                    === PROBLEM TO SOLVE ===
+                    {problem_context}
+                    
+                    === YOUR TASK ===
+                    
+                    Select {num_methods} different CI methods that:
+                    1. Represent DIVERSE approaches (e.g., don't pick GA and GP together - too similar)
+                    2. Are ALL potentially suitable for this problem type
+                    3. Have complementary strengths (exploration vs exploitation, speed vs accuracy, etc.)
+                    
+                    For EACH selected method, provide optimal parameters based on:
+                    - Problem characteristics (size, dimensionality, constraints)
+                    - Method strengths and typical use cases
+                    - Computational budget (keep iterations reasonable)
+                    
+                    === RESPONSE FORMAT ===
+                    
+                    You MUST respond with valid JSON:
+                    {{
+                        "selected_methods": ["<METHOD_ID1>", "<METHOD_ID2>", "<METHOD_ID3>", ...],
+                        "reasoning": "<Why these methods were chosen for comparison>",
+                        "method_parameters": {{
+                            "<METHOD_ID1>": {{<parameters_dict>}},
+                            "<METHOD_ID2>": {{<parameters_dict>}},
+                            ...
+                        }},
+                        "confidence": <0.0-1.0>,
+                        "comparison_criteria": ["best_fitness", "execution_time", "convergence_speed"],
+                        "expected_best_method": "<METHOD_ID or null>"
+                    }}
+                    
+                    CRITICAL REQUIREMENTS:
+                    - Use SHORT METHOD IDENTIFIERS (e.g., "ACO", "GA", "PSO") NOT full names like "Ant Colony Optimization"
+                    - The identifiers are shown after "METHOD IDENTIFIER:" in the available methods list above
+                    - Select EXACTLY {num_methods} methods
+                    - All methods must be from the available methods list
+                    - Provide complete, valid parameters for EACH method
+                    - Keep reasoning concise to avoid JSON formatting issues
+                """
+        return prompt
+    
+    @staticmethod
+    def build_multi_result_analysis_prompt(
+        problem_info: Dict[str, Any],
+        execution_results: Dict[str, Dict[str, Any]]
+    ) -> str:
+        problem_context = PromptBuilder.build_problem_context(problem_info)
+        
+        results_summary = []
+        for method_name, result in execution_results.items():
+            summary = f"""
+            Method: {method_name}
+            - Best Fitness: {result.get('best_fitness', 'N/A')}
+            - Execution Time: {result.get('execution_time', 'N/A'):.2f}s
+            - Iterations: {result.get('iterations', 'N/A')}
+            - Gap from Optimal: {result.get('metrics', {}).get('gap_percentage', 'N/A')}%
+            - Success: {result.get('success', True)}
+            """
+            results_summary.append(summary)
+        
+        results_text = "\n".join(results_summary)
+        
+        prompt = f"""
+                    === MULTI-METHOD RESULT ANALYSIS ===
+                    
+                    You have executed multiple CI methods on the same problem. Now analyze the results and recommend the BEST method.
+                    
+                    === PROBLEM INFORMATION ===
+                    {problem_context}
+                    
+                    === EXECUTION RESULTS ===
+                    {results_text}
+                    
+                    === YOUR ANALYSIS TASK ===
+                    
+                    1. **Compare Performance**: Which method achieved the best fitness? Consider:
+                       - Solution quality (fitness value, gap from optimal)
+                       - Convergence speed (how quickly it found good solutions)
+                       - Computational efficiency (execution time)
+                       - Reliability (did it consistently find good solutions)
+                    
+                    2. **Rank Methods**: Order all methods from best to worst based on overall performance
+                    
+                    3. **Provide Detailed Analysis**: Explain:
+                       - Why the recommended method performed best
+                       - Strengths and weaknesses of each method
+                       - Trade-offs between methods (speed vs accuracy, etc.)
+                    
+                    4. **Suggest Next Steps**: What should be done to further improve results?
+                       - Parameter tuning for the best method
+                       - Hybrid approaches combining strengths
+                       - Additional methods to try
+                    
+                    === RESPONSE FORMAT ===
+                    
+                    You MUST respond with valid JSON:
+                    {{
+                        "recommended_method": "<BEST_METHOD_NAME>",
+                        "ranking": ["<METHOD1>", "<METHOD2>", "<METHOD3>", ...],
+                        "analysis": "<Detailed comparison and explanation>",
+                        "performance_comparison": {{
+                            "<METHOD1>": "<Brief performance summary>",
+                            "<METHOD2>": "<Brief performance summary>",
+                            ...
+                        }},
+                        "confidence": <0.0-1.0>,
+                        "next_steps": ["<step1>", "<step2>", ...]
+                    }}
+                    
+                    IMPORTANT:
+                    - Be objective in your analysis
+                    - Consider multiple criteria, not just fitness
+                    - Keep text concise to avoid JSON formatting issues
+                    - Provide actionable next steps
+                """
+        return prompt
 
 
 def get_default_method_mapping() -> Dict[str, str]:

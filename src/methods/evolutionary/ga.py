@@ -237,7 +237,17 @@ class GeneticAlgorithm(BaseMethod):
         return [population[i].copy() for i in sorted_indices[:elitism_count]]
 
     def fit(self, problem_data, callback=None, **kwargs):
-        problem_size = kwargs.get('problem_size', len(problem_data))
+        if hasattr(problem_data, 'n_cities'):
+            problem_size = problem_data.n_cities
+        elif hasattr(problem_data, 'get_dimension'):
+            problem_size = problem_data.get_dimension()
+        elif hasattr(problem_data, '__len__'):
+            problem_size = len(problem_data)
+        else:
+            problem_size = kwargs.get('problem_size')
+            if problem_size is None:
+                raise ValueError("Cannot determine problem size. Problem must have n_cities, get_dimension(), or __len__().")
+        
         self.start_time = time.time()
         self.population = self.initialize_population(problem_size)
         self.fitness_history = []
@@ -318,6 +328,7 @@ class GeneticAlgorithm(BaseMethod):
 
         self.results = {
             'best_individual': self.best_individual,
+            'best_solution': self.best_individual,
             'best_fitness': self.best_fitness,
             'convergence_history': self.convergence_history.copy(),
             'total_generations': self.parameters['generations'],

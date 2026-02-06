@@ -1093,3 +1093,1178 @@ Our experimental benchmarks across Combinatorial Optimization, Continuous Functi
 2. **Hybrid Optimization Strategies:** The current system selects a single method. Future work should enable the Agent to design _hybrid_ pipelines, such as running a Genetic Algorithm for global search and then automatically switching to a Local Search method (Memetic Algorithms) for final refinement.
     
 3. **Dynamic Code Generation:** Instead of selecting from pre-defined Python classes, the next generation of the Orchestrator should be empowered to generate custom optimization code. This would allow the Agent to implement novel loss functions or heuristic modifications that are not hard-coded in the library.
+
+
+
+
+# 8. Appendices:
+
+
+## A. Complete parameter settings
+
+**TSP: (ACO)**
+
+| **Parameter**      | **Value** | **Description**                        |
+| ------------------ | --------- | -------------------------------------- |
+| `n_ants`           | 50        | Number of agents in the colony         |
+| `max_iterations`   | 500       | Maximum number of cycles               |
+| `alpha`            | 1.0       | Pheromone importance factor            |
+| `beta`             | 2.5       | Heuristic (distance) importance factor |
+| `evaporation_rate` | 0.5       | Rate at which pheromones decay (0-1)   |
+| `q`                | 100       | Pheromone deposit constant             |
+| `local_search`     | True      | 2-Opt local search enabled             |
+
+
+**Continuous Function Optimization: (PSO)**
+
+|**Parameter**|**Value (Initial)**|**Value (Feedback Optimized)**|**Description**|
+|---|---|---|---|
+|`n_particles`|100|**150 - 200**|Swarm population size|
+|`max_iterations`|1000|**1200 - 1500**|Maximum search steps|
+|`w` (Inertia)|0.6|**0.65**|Inertia weight|
+|`c1` (Cognitive)|1.2|**1.5 - 1.8**|Personal best acceleration|
+|`c2` (Social)|1.2|**1.5 - 1.8**|Global best acceleration|
+|`velocity_clamp`|0.5|**0.6 - 0.7**|Max velocity limit|
+
+**Classification/Titanic (MLP):**
+
+|**Parameter**|**Setting**|
+|---|---|
+|**Architecture**|`[128, 64]` (Initial) $\to$ `[256, 128, 64]` (Feedback)|
+|**Activation**|`relu`|
+|**Optimizer**|`adam`|
+|**Learning Rate**|`0.005` (Initial) $\to$ `0.003` (Feedback)|
+|**Batch Size**|64 (Initial) $\to$ 128 (Feedback)|
+|**Max Epochs**|800 - 1000|
+|**Early Stopping**|Patience = 30-50 epochs|
+
+
+**Clustering/Iris & Mall Segmentation: (SOM):**
+
+| **Parameter**   | **Value (Initial)** | **Value (Feedback)** | **Description**         |
+| --------------- | ------------------- | -------------------- | ----------------------- |
+| `map_size`      | `(3, 3)`            | **`(5, 5)`**         | Grid dimensions (Nodes) |
+| `topology`      | `hexagonal`         | `hexagonal`          | Grid layout             |
+| `learning_rate` | 0.8 $\to$ 0.01      | **0.6 $\to$ 0.01**   | Decay schedule          |
+| `neighborhood`  | 2.0                 | **2.0 - 1.5**        | Radius of influence     |
+| `max_epochs`    | 500                 | **750**              | Training iterations     |
+
+
+
+## B. All experimental results (tables)
+
+
+**Combinatorial Optimization (TSP):**
+
+| **Problem Instance** | **Method** | **Best Distance** | **Mean Distance** | **Std Dev** | **Time (s)** | **Gap to Optimal (%)** |
+| -------------------- | ---------- | ----------------- | ----------------- | ----------- | ------------ | ---------------------- |
+| **TSP-eil51**        | ACO        | 430.38            | 431.72            | 1.13        | 85.98        | 1.34%                  |
+| **TSP-berlin52**     | ACO        | 7544.37           | 7544.48           | 0.15        | 90.10        | 0.03%                  |
+| **TSP-kroA100**      | ACO        | 21679.87          | 21825.42          | 169.97      | 236.77       | 2.55%                  |
+| **Random-30**        | ACO        | 4517.67           | 4517.67           | 0.00        | 36.65        | 11.54%*                |
+| **Random-50**        | ACO        | 5713.09           | 5713.09           | 0.00        | 92.69        | 0.00%*                 |
+
+**Continuous Function Optimization**:
+
+|**Function**|**Dim**|**Iteration**|**Method**|**Best Fitness**|**Mean Fitness**|**Improvement**|
+|---|---|---|---|---|---|---|
+|**Rastrigin**|10D|Initial|PSO|14.9244|17.1133|-|
+|**Rastrigin**|10D|Feedback 1|PSO|8.9546|11.7405|31.4%|
+|**Rastrigin**|10D|Feedback 2|PSO|**5.9698**|**10.5466**|**38.3%**|
+|**Ackley**|10D|Initial|PSO|**7.55e-15**|0.2310|(Optimal Reached)|
+|**Rosenbrock**|10D|Initial|PSO|6.2690|8.4511|-|
+
+**Classification (Titanic):**
+
+|**Session**|**Stage**|**Method**|**Accuracy**|**F1-Score**|**AUC**|**Recall**|**Time (s)**|
+|---|---|---|---|---|---|---|---|
+|**1**|Initial|MLP|0.761|0.652|0.807|0.588|2.04|
+|**1**|Feedback|MLP|**0.806**|**0.705**|0.800|0.608|0.86|
+|**2**|Initial|MLP|0.784|0.701|0.818|0.667|1.38|
+|**2**|Feedback|MLP|0.791|0.696|**0.825**|0.627|0.68|
+|**3**|Initial|MLP|0.791|0.689|0.815|0.608|1.82|
+|**3**|Feedback|MLP|**0.821**|**0.727**|0.812|0.627|0.50|
+
+**Clustering (Unsupervised):**
+
+|**Dataset**|**Session**|**Stage**|**Method**|**Silhouette Score (Higher is Better)**|**ARI**|
+|---|---|---|---|---|---|
+|**Iris**|1|Initial|SOM|**0.419**|0.559|
+|**Iris**|1|Feedback|SOM|0.361|0.394|
+|**Mall Data**|1|Initial|SOM|**0.421**|N/A|
+|**Mall Data**|1|Feedback|SOM|0.326|N/A|
+|**Synthetic**|1|Initial|SOM|**0.555**|0.893|
+|**Synthetic**|1|Feedback|SOM|0.209|0.390|
+
+
+## C. LLM prompts used:
+
+> We have a file `prompts.py` in `orchesterator` directory that contains all prompts:
+
+
+**Method Description prompts:**
+
+```python
+"ACO": {
+
+            "name": "Ant Colony Optimization",
+
+            "category": MethodCategory.SWARM_INTELLIGENCE.value,
+
+            "description": "Bio-inspired metaheuristic for combinatorial optimization. Simulates pheromone trails.",
+
+            "best_for": ["TSP", "routing", "scheduling", "combinatorial problems"],
+
+            "problem_types": ["TSP", "combinatorial"],
+
+            "strengths": ["Excellent for graph-based problems", "Fast convergence", "Distributed nature"],
+
+            "weaknesses": ["Can get stuck in local optima", "Requires proper parameter tuning"],
+
+        },
+
+        "GA": {
+
+            "name": "Genetic Algorithm",
+
+            "category": MethodCategory.EVOLUTIONARY.value,
+
+            "description": "Population-based evolutionary algorithm using selection, crossover, and mutation.",
+
+            "best_for": ["TSP", "combinatorial optimization", "discrete optimization"],
+
+            "problem_types": ["TSP", "combinatorial", "discrete"],
+
+            "strengths": ["General-purpose", "Handles discrete problems well", "Parallelizable"],
+
+            "weaknesses": ["Slow on high-dimensional problems", "Needs proper population sizing"],
+
+        },
+
+        "GP": {
+
+            "name": "Genetic Programming",
+
+            "category": MethodCategory.EVOLUTIONARY.value,
+
+            "description": "Evolves tree-based mathematical expressions for symbolic regression.",
+
+            "best_for": ["symbolic regression", "function approximation", "expression discovery"],
+
+            "problem_types": ["continuous", "regression"],
+
+            "strengths": ["Interpretable results", "No need to specify form", "Automatic feature discovery"],
+
+            "weaknesses": ["Slow", "Code bloat", "Requires large populations"],
+
+        },
+
+        "PSO": {
+
+            "name": "Particle Swarm Optimization",
+
+            "category": MethodCategory.SWARM_INTELLIGENCE.value,
+
+            "description": "Simulates social behavior of bird flocking or fish schooling. ONLY for continuous optimization.",
+
+            "best_for": ["continuous optimization", "function optimization", "multi-modal problems"],
+
+            "problem_types": ["continuous", "function_optimization"],
+
+            "strengths": ["Fast convergence", "Few parameters", "Good for continuous spaces"],
+
+            "weaknesses": ["CANNOT handle discrete/combinatorial problems like TSP", "Can diverge"],
+
+        },
+
+        "FuzzyController": {
+
+            "name": "Fuzzy Logic Controller",
+
+            "category": MethodCategory.FUZZY_SYSTEM.value,
+
+            "description": "Uses fuzzy sets and rules for classification and control.",
+
+            "best_for": ["classification", "control systems", "time series", "decision support"],
+
+            "problem_types": ["classification"],
+
+            "strengths": ["Interpretable rules", "Handles imprecision", "Robust"],
+
+            "weaknesses": ["Requires domain knowledge", "Manual rule definition", "Not best for pure prediction"],
+
+        },
+
+        "Hopfield": {
+
+            "name": "Hopfield Network",
+
+            "category": MethodCategory.NEURAL_NETWORK.value,
+
+            "description": "Recurrent neural network for pattern completion and associative memory.",
+
+            "best_for": ["pattern recognition", "pattern completion", "memory retrieval", "optimization"],
+
+            "problem_types": ["pattern_recognition", "continuous"],
+
+            "strengths": ["Associative memory", "Pattern completion", "Energy-based stability"],
+
+            "weaknesses": ["Limited capacity", "Spurious attractors", "Slow convergence"],
+
+        },
+
+        "MLP": {
+
+            "name": "Multi-Layer Perceptron",
+
+            "category": MethodCategory.NEURAL_NETWORK.value,
+
+            "description": "Feedforward neural network with multiple hidden layers for supervised learning.",
+
+            "best_for": ["classification", "regression", "function approximation", "non-linear fitting"],
+
+            "problem_types": ["classification", "regression"],
+
+            "strengths": ["Universal approximator", "Powerful", "Well-understood"],
+
+            "weaknesses": ["Black-box", "Needs lots of data", "Sensitive to initialization"],
+
+        },
+
+        "Perceptron": {
+
+            "name": "Single-Layer Perceptron",
+
+            "category": MethodCategory.NEURAL_NETWORK.value,
+
+            "description": "Single-layer linear classifier using Hebbian learning.",
+
+            "best_for": ["linear classification", "binary classification", "simple patterns"],
+
+            "problem_types": ["classification"],
+
+            "strengths": ["Simple", "Fast", "Interpretable"],
+
+            "weaknesses": ["Can only solve linear problems", "Single output", "Limited expressiveness"],
+
+        },
+
+        "SOM": {
+
+            "name": "Self-Organizing Map",
+
+            "category": MethodCategory.NEURAL_NETWORK.value,
+
+            "description": "Unsupervised learning for dimensionality reduction and visualization.",
+
+            "best_for": ["clustering", "visualization", "dimensionality reduction", "exploratory analysis"],
+
+            "problem_types": ["clustering"],
+
+            "strengths": ["Interpretable visualization", "Topology preservation", "Unsupervised"],
+
+            "weaknesses": ["Slow training", "Requires tuning neighborhood", "Limited for classification"],
+
+        },
+```
+
+**System init prompt:**
+
+```python
+"""You are an expert Computational Intelligence (CI) Architect with deep knowledge of neural networks, fuzzy systems, and evolutionary algorithms.
+
+  
+
+                            Your task is to SELECT THE BEST CI METHOD and its OPTIMAL PARAMETERS for a given problem.
+
+  
+
+                            === AVAILABLE CI METHODS & PARAMETER SPECIFICATIONS ===
+
+  
+
+                            {methods_info}
+
+  
+
+                            === YOUR DECISION FRAMEWORK ===
+
+  
+
+                            1. ANALYZE THE PROBLEM:
+
+                            - Understand the problem type (optimization, classification, clustering, regression)
+
+                            - Identify if it's TSP/combinatorial OR continuous optimization OR classification/clustering
+
+                            - Identify key characteristics (dimensionality, data size, time constraints, domain)
+
+                            - Consider problem-specific challenges and requirements
+
+  
+
+                            2. METHOD SELECTION CRITERIA:
+
+                            - Match problem characteristics to method strengths
+
+                            - Consider computational budget (time, iterations)
+
+                            - Evaluate scalability needs
+
+                            - Account for problem structure (discrete vs continuous, linear vs non-linear)
+
+  
+
+                            3. PARAMETER TUNING STRATEGY:
+
+                            - For EXPLORATION problems: Use larger populations, higher mutation/learning rates
+
+                            - For EXPLOITATION problems: Use smaller populations, lower learning rates
+
+                            - For HIGH-DIMENSIONAL problems: Increase mutation/exploration parameters
+
+                            - For NOISY problems: Increase population/sample sizes
+
+                            - For TIME-CONSTRAINED problems: Reduce iterations, increase population efficiency
+
+  
+
+                            4. CONFIDENCE & ALTERNATIVES:
+
+                            - Provide confidence level (0.0-1.0) based on problem-method fit
+
+                            - Suggest 2-3 alternative methods that could also work
+
+                            - Include backup strategies for quick parameter adjustment
+
+  
+
+                            === PARAMETER NAMING CONVENTIONS ===
+
+  
+
+                            ACO: n_ants (swarm size), alpha (pheromone weight), beta (heuristic weight), evaporation_rate
+
+                            GA: population_size, crossover_rate, mutation_rate, selection (tournament/roulette/rank)
+
+                            GP: population_size, generations, max_depth, crossover_rate, mutation_rate
+
+                            PSO: n_particles, w (inertia), c1, c2 (social/cognitive), velocity_clamp
+
+                            FuzzyController: n_membership_functions, membership_type, defuzzification
+
+                            Hopfield: max_iterations, threshold, async_update
+
+                            MLP: hidden_layers (list), learning_rate, activation, max_epochs
+
+                            Perceptron: learning_rate, max_epochs, bias
+
+                            SOM: map_size (tuple), learning_rate_initial, max_epochs, topology
+
+  
+
+                            === RESPONSE FORMAT ===
+
+  
+
+                            You MUST respond with a valid JSON object following this structure:
+
+                            {{
+
+                                "selected_method": "<METHOD_IDENTIFIER>",
+
+                                "reasoning": "<Detailed explanation of why this method is best>",
+
+                                "parameters": {{<key>: <value>, ...}},
+
+                                "confidence": <0.0-1.0>,
+
+                                "alternative_methods": ["<METHOD_ID2>", "<METHOD_ID3>"],
+
+                                "expected_performance": "<low|medium|high>",
+
+                                "warnings": [<any concerns>],
+
+                                "backup_strategy": "<Optional alternative approach if performance is poor>"
+
+                            }}
+
+  
+
+                            CRITICAL REQUIREMENTS:
+
+                            - Use the SHORT METHOD IDENTIFIER (e.g., "ACO", "GA", "PSO", "MLP") NOT the full name
+
+                            - The method identifier MUST match EXACTLY what is shown after "METHOD IDENTIFIER:" above
+
+                            - "expected_performance" MUST be EXACTLY one of: "low", "medium", or "high" (no hyphens, no combinations)
+
+                            - ALL string values must use proper JSON escaping (escape quotes and newlines)
+
+                            - ALL parameters must be valid for the selected method AND within the specified ranges
+
+                            - Keep explanations concise to avoid JSON formatting issues
+
+                        """
+
+```
+
+**System feedback prompt:**
+
+```python
+"""
+
+                                FEEDBACK LOOP - PARAMETER TUNING ITERATION
+
+  
+
+                                Problem: {problem_info.get('name', 'Unknown')}
+
+                                Previously Selected Method: {method_used}
+
+  
+
+                                === PREVIOUS EXECUTION RESULTS ===
+
+                                Best Fitness: {current_best}
+
+                                Gap to Optimal: {gap_percentage}%
+
+                                Parameters Used: {json.dumps(params_used, indent=2)}
+
+  
+
+                                === ANALYSIS & ADJUSTMENT STRATEGY ===
+
+  
+
+                                Based on the execution results, determine if:
+
+                                1. Gap is LARGE (> 20%): Try to INCREASE exploration
+
+                                - Increase mutation/learning rates
+
+                                - Increase population/swarm size
+
+                                - Decrease elitism/exploitation parameters
+
+                                2. Gap is MODERATE (5-20%): Try to BALANCE exploration/exploitation
+
+                                - Fine-tune rates moderately
+
+                                - Consider different selection strategies
+
+                                - Increase iterations if time allows
+
+  
+
+                                3. Gap is SMALL (< 5%): Try to REFINE solution
+
+                                - Increase exploitation parameters
+
+                                - Decrease learning rates (for gradient-based)
+
+                                - Enable local search if available
+
+  
+
+                                === REQUIRED RESPONSE FORMAT ===
+
+  
+
+                                You MUST respond with a valid JSON object following the EXACT same structure as before:
+
+                                {{
+
+                                    "selected_method": "<METHOD_IDENTIFIER>",
+
+                                    "reasoning": "<Detailed explanation of parameter adjustments>",
+
+                                    "parameters": {{<adjusted_parameters>}},
+
+                                    "confidence": <0.0-1.0>,
+
+                                    "alternative_methods": ["<alternatives>"],
+
+                                    "expected_performance": "<low|medium|high>",
+
+                                    "warnings": ["<any concerns>"],
+
+                                    "backup_strategy": "<Optional fallback>"
+
+                                }}
+
+  
+
+                                CRITICAL REQUIREMENTS:
+
+                                - Use SHORT METHOD IDENTIFIER (e.g., "{method_used}") NOT the full method name
+
+                                - For "selected_method": Use "{method_used}" if continuing, or choose a different method identifier if switching
+
+                                - For "expected_performance": MUST be exactly "low", "medium", or "high"
+
+                                - Provide adjusted parameters with clear reasoning for each change
+
+                            """
+```
+
+
+**Multi method prompt:**
+
+```python
+"""
+
+                    === MULTI-METHOD ORCHESTRATION MODE ===
+
+                    Instead of selecting ONE method, you will select {num_methods} DIFFERENT methods to run in parallel.
+
+                    This allows us to compare multiple approaches and determine which works best for this problem.
+
+                    === PROBLEM TO SOLVE ===
+
+                    {problem_context}
+
+                    === YOUR TASK ===
+
+                    Select {num_methods} different CI methods that:
+
+                    1. Represent DIVERSE approaches (e.g., don't pick GA and GP together - too similar)
+
+                    2. Are ALL potentially suitable for this problem type
+
+                    3. Have complementary strengths (exploration vs exploitation, speed vs accuracy, etc.)
+
+                    For EACH selected method, provide optimal parameters based on:
+
+                    - Problem characteristics (size, dimensionality, constraints)
+
+                    - Method strengths and typical use cases
+
+                    - Computational budget (keep iterations reasonable)
+
+                    === RESPONSE FORMAT ===
+
+                    You MUST respond with valid JSON:
+
+                    {{
+
+                        "selected_methods": ["<METHOD_ID1>", "<METHOD_ID2>", "<METHOD_ID3>", ...],
+
+                        "reasoning": "<Why these methods were chosen for comparison>",
+
+                        "method_parameters": {{
+
+                            "<METHOD_ID1>": {{<parameters_dict>}},
+
+                            "<METHOD_ID2>": {{<parameters_dict>}},
+
+                            ...
+
+                        }},
+
+                        "confidence": <0.0-1.0>,
+
+                        "comparison_criteria": ["best_fitness", "execution_time", "convergence_speed"],
+
+                        "expected_best_method": "<METHOD_ID or null>"
+
+                    }}
+
+                    CRITICAL REQUIREMENTS:
+
+                    - Use SHORT METHOD IDENTIFIERS (e.g., "ACO", "GA", "PSO") NOT full names like "Ant Colony Optimization"
+
+                    - The identifiers are shown after "METHOD IDENTIFIER:" in the available methods list above
+
+                    - Select EXACTLY {num_methods} methods
+
+                    - All methods must be from the available methods list
+
+                    - Provide complete, valid parameters for EACH method
+
+                    - Keep reasoning concise to avoid JSON formatting issues
+
+                """
+```
+
+
+**Multi method result analysis:**
+
+```python
+        prompt = f"""
+
+                    === MULTI-METHOD RESULT ANALYSIS ===
+
+                    You have executed multiple CI methods on the same problem. Now analyze the results and recommend the BEST method.
+
+                    === PROBLEM INFORMATION ===
+
+                    {problem_context}
+
+                    === EXECUTION RESULTS ===
+
+                    {results_text}
+
+                    === YOUR ANALYSIS TASK ===
+
+                    1. **Compare Performance**: Which method achieved the best fitness? Consider:
+
+                       - Solution quality (fitness value, gap from optimal)
+
+                       - Convergence speed (how quickly it found good solutions)
+
+                       - Computational efficiency (execution time)
+
+                       - Reliability (did it consistently find good solutions)
+
+                    2. **Rank Methods**: Order all methods from best to worst based on overall performance
+
+                    3. **Provide Detailed Analysis**: Explain:
+
+                       - Why the recommended method performed best
+
+                       - Strengths and weaknesses of each method
+
+                       - Trade-offs between methods (speed vs accuracy, etc.)
+
+                    4. **Suggest Next Steps**: What should be done to further improve results?
+
+                       - Parameter tuning for the best method
+
+                       - Hybrid approaches combining strengths
+
+                       - Additional methods to try
+
+                    === RESPONSE FORMAT ===
+
+                    You MUST respond with valid JSON:
+
+                    {{
+
+                        "recommended_method": "<BEST_METHOD_NAME>",
+
+                        "ranking": ["<METHOD1>", "<METHOD2>", "<METHOD3>", ...],
+
+                        "analysis": "<Detailed comparison and explanation>",
+
+                        "performance_comparison": {{
+
+                            "<METHOD1>": "<Brief performance summary>",
+
+                            "<METHOD2>": "<Brief performance summary>",
+
+                            ...
+
+                        }},
+
+                        "confidence": <0.0-1.0>,
+
+                        "next_steps": ["<step1>", "<step2>", ...]
+
+                    }}
+
+                    IMPORTANT:
+
+                    - Be objective in your analysis
+
+                    - Consider multiple criteria, not just fitness
+
+                    - Keep text concise to avoid JSON formatting issues
+
+                    - Provide actionable next steps
+
+                """
+```
+
+
+
+
+## D. Sample LLM interactions
+
+
+```text
+# 2026-02-06 19:21:31 - function_optimization - INFO - ================================================================================
+
+# 2026-02-06 19:21:31 - function_optimization - INFO - MetaMind Function Optimization Benchmark
+
+# 2026-02-06 19:21:31 - function_optimization - INFO - ================================================================================
+
+# Initializing MetaMind Agent...
+
+# Agent initialized successfully!
+
+  
+  
+
+# ================================================================================
+
+# EXPERIMENT CONFIGURATION
+
+# ================================================================================
+
+# Runs per iteration: 5
+
+# Feedback loop: ENABLED ✓
+
+# Max feedback iterations: 2
+
+# ================================================================================
+
+  
+
+# Memory Manager initialized. Saving to: /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/memory
+
+  
+
+# ################################################################################
+
+# # Agent-Guided Optimization: Rastrigin-10D
+
+# # Function: Rastrigin, Dimension: 10
+
+# # Optimal Value: 0.0
+
+# # Feedback Loop: ENABLED
+
+# ################################################################################
+
+  
+
+# ================================================================================
+
+# Asking LLM for recommendation on Rastrigin-10D...
+
+# ================================================================================
+
+  
+
+# ============================================================
+
+# LLM MULTI-METHOD RECOMMENDATION:
+
+# ============================================================
+
+# {
+
+#     "selected_method": "PSO",
+
+#     "reasoning": "Rastrigin-10D is a continuous, high-dimensional function optimization problem. PSO is well-suited for this type of problem due to its ability to efficiently explore the search space and converge towards the global optimum. The past configurations show that PSO has performed well on this specific problem.",
+
+#     "parameters": {
+
+#         "n_particles": 150,
+
+#         "max_iterations": 1500,
+
+#         "w": 0.7,
+
+#         "c1": 1.5,
+
+#         "c2": 1.5,
+
+#         "w_decay": true,
+
+#         "velocity_clamp": 0.5
+
+#     },
+
+#     "confidence": 0.9,
+
+#     "alternative_methods": ["GA", "DE"],
+
+#     "expected_performance": "high",
+
+#     "warnings": [],
+
+#     "backup_strategy": "If performance is poor, consider increasing the number of particles or iterations, or trying alternative methods like GA or DE with appropriate parameter tuning."
+
+# }
+
+# ============================================================
+
+  
+  
+
+# LLM Recommendation:
+
+#   Method: PSO
+
+#   Confidence: 90.00%
+
+#   Expected Performance: high
+
+#   Reasoning: Rastrigin-10D is a continuous, high-dimensional function optimization problem. PSO is well-suited for this type of problem due to its ability to efficiently explore the search space and converge towards the global optimum. The past configurations show that PSO has performed well on this specific problem.
+
+  
+
+#   Recommended Parameters:
+
+#     - n_particles: 150
+
+#     - max_iterations: 1500
+
+#     - w: 0.7
+
+#     - c1: 1.5
+
+#     - c2: 1.5
+
+#     - w_decay: True
+
+#     - velocity_clamp: 0.5
+
+  
+
+#   Alternative Methods: GA, DE
+
+  
+
+# ================================================================================
+
+# ITERATION 0: Initial Recommendation
+
+# ================================================================================
+
+  
+
+# Initial Recommendation - Running 5 independent experiments...
+
+# --------------------------------------------------------------------------------
+
+# [PSO         ] [==============================] 100% | Iter 1500/1500 | Best: 3.9798 Fitness: 3.979836 | Error: 3.979836 | Gap: 397.9836% | Time: 1.81s | Evals: 225150
+
+# [PSO         ] [==============================] 100% | Iter 1500/1500 | Best: 9.9496 Fitness: 9.949586 | Error: 9.949586 | Gap: 994.9586% | Time: 1.81s | Evals: 225150
+
+# [PSO         ] [==============================] 100% | Iter 1500/1500 | Best: 5.9698 Fitness: 5.969754 | Error: 5.969754 | Gap: 596.9754% | Time: 1.81s | Evals: 225150
+
+# [PSO         ] [==============================] 100% | Iter 1500/1500 | Best: 2.9849 Fitness: 2.984877 | Error: 2.984877 | Gap: 298.4877% | Time: 1.81s | Evals: 225150
+
+# [PSO         ] [==============================] 100% | Iter 1500/1500 | Best: 3.9798 Fitness: 3.979836 | Error: 3.979836 | Gap: 397.9836% | Time: 1.81s | Evals: 225150
+
+  
+
+# ================================================================================
+
+# Iteration 0 Summary
+
+# ================================================================================
+
+# Method: PSO
+
+# Successful Runs: 5/5
+
+  
+
+# Best Fitness:
+
+#   Best:   2.984877
+
+#   Mean:   5.372778 ± 2.485405
+
+#   Median: 3.979836
+
+  
+
+# Error from Optimal:
+
+#   Best: 2.984877
+
+#   Mean: 5.372778 ± 2.485405
+
+  
+
+# Gap Percentage:
+
+#   Best: 298.4877%
+
+#   Mean: 537.2778%
+
+  
+
+# Computation Time: 1.81s ± 0.00s
+
+# Function Evaluations: 225150
+
+# ================================================================================
+
+# Plot saved to: /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/figures/Rastrigin_10D_iter0_convergence_20260206_192147.png
+
+#   ✓ Saved convergence plot: Rastrigin_10D_iter0_convergence_20260206_192147.png
+
+# Plot saved to: /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/figures/Rastrigin_10D_iter0_all_runs_20260206_192147.png
+
+#   ✓ Saved all-runs plot: Rastrigin_10D_iter0_all_runs_20260206_192147.png
+
+#    [Memory] Saving initial result (Fitness: 2.984877)
+
+  
+
+# ================================================================================
+
+# STEP 6: LLM Result Interpretation
+
+# ================================================================================
+
+  
+
+#  Performance Assessment: POOR
+
+# Confidence: LOW
+
+  
+
+# Analysis:
+
+# The PSO algorithm struggled to find a good solution for the 10D Rastrigin function. With a gap of over 500% from the optimal value, the performance is poor. The convergence was likely erratic and slow, as the algorithm took many iterations (225150) to reach a suboptimal solution. The computation time of 1.81 seconds is reasonable, but the quality of the solution is not satisfactory.
+
+  
+
+#  Comparison with Expected:
+
+# The actual performance is significantly worse than the expected high performance. The large gap from the optimal value indicates that the PSO algorithm, with the given parameters, is not well-suited for this high-dimensional optimization problem.
+
+  
+
+#  Improvement Recommendations:
+
+#   1. [PARAMETER_TUNING] Increase the number of particles (n_particles) to improve exploration.
+
+#   2. [PARAMETER_TUNING] Adjust the inertia weight (w) and acceleration coefficients (c1, c2) to balance exploration and exploitation.
+
+#   3. [ALTERNATIVE_METHOD] Try using a Genetic Algorithm (GA) with a larger population size for better exploration.
+
+#   4. [HYBRID_APPROACH] Combine PSO with a local search algorithm, such as the Nelder-Mead method, to refine the solution.
+
+  
+
+# 🎯 Next Steps:
+
+#   1. Experiment with different parameter settings for PSO.
+
+#   2. Implement and test a Genetic Algorithm with a larger population.
+
+#   3. Develop a hybrid approach combining PSO with a local search algorithm.
+
+#   4. Evaluate the performance of the alternative methods and compare their results.
+
+# ================================================================================
+
+  
+
+# ================================================================================
+
+# ITERATION 1: Feedback Loop
+
+# ================================================================================
+
+  
+
+# Requesting feedback from agent...
+
+  
+
+# Feedback Recommendation:
+
+#   Method: PSO
+
+#   Confidence: 75.00%
+
+#   Reasoning: The gap to optimal is moderate, so we will balance exploration and exploitation. Increasing the swarm size and iterations slightly to allow more search, while keeping other parameters the same to maintain convergence.
+
+  
+
+#   Adjusted Parameters:
+
+#     🔸 n_particles: 150 → 200
+
+#     🔸 max_iterations: 1500 → 2000
+
+#        w: 0.7 → 0.7
+
+#        c1: 1.5 → 1.5
+
+#        c2: 1.5 → 1.5
+
+#        w_decay: True → True
+
+#        velocity_clamp: 0.5 → 0.5
+
+  
+
+# Feedback Iteration 1 - Running 5 independent experiments...
+
+# --------------------------------------------------------------------------------
+
+# [PSO         ] [==============================] 100% | Iter 2000/2000 | Best: 5.9697 Fitness: 5.969749 | Error: 5.969749 | Gap: 596.9749% | Time: 3.27s | Evals: 400200
+
+# [PSO         ] [==============================] 100% | Iter 2000/2000 | Best: 2.9849 Fitness: 2.984877 | Error: 2.984877 | Gap: 298.4877% | Time: 3.22s | Evals: 400200
+
+# [PSO         ] [==============================] 100% | Iter 2000/2000 | Best: 3.9798 Fitness: 3.979836 | Error: 3.979836 | Gap: 397.9836% | Time: 3.20s | Evals: 400200
+
+# [PSO         ] [==============================] 100% | Iter 2000/2000 | Best: 3.9798 Fitness: 3.979836 | Error: 3.979836 | Gap: 397.9836% | Time: 3.21s | Evals: 400200
+
+# [PSO         ] [==============================] 100% | Iter 2000/2000 | Best: 5.9698 Fitness: 5.969754 | Error: 5.969754 | Gap: 596.9754% | Time: 3.21s | Evals: 400200
+
+  
+
+# ================================================================================
+
+# Iteration 1 Summary
+
+# ================================================================================
+
+# Method: PSO
+
+# Successful Runs: 5/5
+
+  
+
+# Best Fitness:
+
+#   Best:   2.984877
+
+#   Mean:   4.576811 ± 1.193950
+
+#   Median: 3.979836
+
+  
+
+# Error from Optimal:
+
+#   Best: 2.984877
+
+#   Mean: 4.576811 ± 1.193950
+
+  
+
+# Gap Percentage:
+
+#   Best: 298.4877%
+
+#   Mean: 457.6811%
+
+  
+
+# Computation Time: 3.22s ± 0.02s
+
+# Function Evaluations: 400200
+
+# ================================================================================
+
+# Plot saved to: /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/figures/Rastrigin_10D_iter1_convergence_20260206_192217.png
+
+#   ✓ Saved convergence plot: Rastrigin_10D_iter1_convergence_20260206_192217.png
+
+# Plot saved to: /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/figures/Rastrigin_10D_iter1_all_runs_20260206_192217.png
+
+#   ✓ Saved all-runs plot: Rastrigin_10D_iter1_all_runs_20260206_192217.png
+
+#    [Memory] Saving feedback result (Fitness: 2.984877)
+
+  
+
+# Improvement Analysis:
+
+#   Previous Mean: 5.372778
+
+#   Current Mean:  4.576811
+
+#   Absolute Improvement: 0.795967
+
+#   Percentage Improvement: 14.81%
+
+#   Performance IMPROVED!
+
+  
+
+# ================================================================================
+
+# ITERATION 2: Feedback Loop
+
+# ================================================================================
+
+  
+
+# Requesting feedback from agent...
+
+  
+
+# Feedback Recommendation:
+
+#   Method: PSO
+
+#   Confidence: 70.00%
+
+#   Reasoning: The gap to optimal is moderate, so I will fine-tune the PSO parameters to balance exploration and exploitation. Increasing the swarm size and number of iterations slightly to allow more search. Keeping w_decay enabled to gradually shift from exploration to exploitation.
+
+  
+
+#   Adjusted Parameters:
+
+#     🔸 n_particles: 200 → 250
+
+#     🔸 max_iterations: 2000 → 2500
+
+#        w: 0.7 → 0.7
+
+#        c1: 1.5 → 1.5
+
+#        c2: 1.5 → 1.5
+
+#        w_decay: True → True
+
+#        velocity_clamp: 0.5 → 0.5
+
+# Failed to create method from feedback: Parameter 'n_particles' must be in range [20, 200], got 250
+
+  
+
+# ================================================================================
+
+# FINAL STEP 6: LLM Interpretation of Best Results
+
+# ================================================================================
+
+  
+
+#  Final Assessment: POOR
+
+# Confidence: LOW
+
+  
+
+#  After 2 iterations of optimization:
+
+# The PSO algorithm struggled to find a good solution for the 10-dimensional Rastrigin function. With a gap of over 450% from the optimal value, the best fitness of 2.98 is far from satisfactory. The convergence was likely erratic and slow, as the algorithm took 400,200 iterations (200 times the specified max_iterations) to reach this suboptimal result. The computation time of 3.22 seconds is reasonable but not impressive given the poor performance.
+
+# ================================================================================
+
+  
+
+# ================================================================================
+
+# FINAL SUMMARY: Rastrigin-10D
+
+# ================================================================================
+
+# Total Iterations: 2
+
+# Best Iteration: 1
+
+# Best Mean Fitness: 4.576811
+
+# Overall Best Fitness: 2.984877
+
+  
+
+# Overall Improvement from Initial:
+
+#   Initial Mean: 5.372778
+
+#   Final Mean:   4.576811
+
+#   Total Improvement: 0.795967 (14.81%)
+
+# ================================================================================
+```

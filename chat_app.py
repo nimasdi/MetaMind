@@ -20,7 +20,7 @@ from src.orchestrator.memory import MemoryManager
 # Import all problem types
 from src.problems.continuous import (
     RastriginFunction, AckleyFunction, RosenbrockFunction, 
-    SphereFunction, GriewankFunction
+    SphereFunction
 )
 from src.problems.classification import TitanicProblem
 from src.problems.clustering import (
@@ -171,7 +171,6 @@ def create_problem_from_selection(problem_category, problem_type, **kwargs):
                 "Ackley Function": AckleyFunction,
                 "Rosenbrock Function": RosenbrockFunction,
                 "Sphere Function": SphereFunction,
-                "Griewank Function": GriewankFunction,
             }
             
             if problem_type in problem_map:

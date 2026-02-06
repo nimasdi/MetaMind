@@ -178,56 +178,12 @@ class SphereFunction(ContinuousOptimizationProblem):
 
 
 
-class SchwefelFunction(ContinuousOptimizationProblem):
-    """
-    f(x) = 418.9829n - Σ[x_i * sin(√|x_i|)]
-    Domain: x_i ∈ [-500, 500]
-    Global minimum: f(420.9687, ..., 420.9687) ≈ 0
-    """
-    
-    def __init__(self, dimension = 10):
-        super().__init__("Schwefel", dimension)
-        self.lower_bounds = np.full(dimension, -500.0)
-        self.upper_bounds = np.full(dimension, 500.0)
-        self.optimal_solution = np.full(dimension, 420.9687)
-        self.optimal_value = 0.0
-        self.load_data()
-    
-    def objective_function(self, x):
-        n = len(x)
-        return 418.9829 * n - np.sum(x * np.sin(np.sqrt(np.abs(x))))
-
-
-class GriewankFunction(ContinuousOptimizationProblem):
-    """
-    f(x) = 1 + (1/4000)Σx_i² - Π cos(x_i/√i)
-    Domain: x_i ∈ [-600, 600]
-    Global minimum: f(0, 0, ..., 0) = 0
-    """
-    
-    def __init__(self, dimension = 10):
-        super().__init__("Griewank", dimension)
-        self.lower_bounds = np.full(dimension, -600.0)
-        self.upper_bounds = np.full(dimension, 600.0)
-        self.optimal_solution = np.zeros(dimension)
-        self.optimal_value = 0.0
-        self.load_data()
-    
-    def objective_function(self, x):
-        sum_sq = np.sum(x**2) / 4000
-        i = np.arange(1, len(x) + 1)
-        prod_cos = np.prod(np.cos(x / np.sqrt(i)))
-        return 1 + sum_sq - prod_cos
-
-
 def create_benchmark_function(function_name, dimension = 10) -> ContinuousOptimizationProblem:
     function_map = {
         'rastrigin': RastriginFunction,
         'ackley': AckleyFunction,
         'rosenbrock': RosenbrockFunction,
         'sphere': SphereFunction,
-        'schwefel': SchwefelFunction,
-        'griewank': GriewankFunction,
     }
     
     function_name_lower = function_name.lower()

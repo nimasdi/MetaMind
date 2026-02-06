@@ -81,7 +81,7 @@ The framework incorporates 9 distinct Computational Intelligence methods across 
 
 Evaluation is conducted on four standardized domains:
 
-1. **Continuous Optimization:** High-dimensional functions (10D, 20D, 30D) including Rastrigin, Ackley, Rosenbrock, Sphere, Schwefel, and Griewank.
+1. **Continuous Optimization:** High-dimensional functions (10D, 20D, 30D) including Rastrigin, Ackley, Rosenbrock, Sphere.
     
 2. **Combinatorial Optimization:** Traveling Salesman Problem (TSP) using TSPLIB instances (`eil51`, `berlin52`) and random instances solved via Branch-and-Bound (exact) or LKH (heuristic) for baseline truth.
     

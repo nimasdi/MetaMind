@@ -15,6 +15,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from src.orchestrator.agent import MetaMindAgent
+from src.orchestrator.memory import MemoryManager
 
 # Import all problem types
 from src.problems.continuous import (
@@ -108,6 +109,8 @@ def initialize_session_state():
         st.session_state.chat_history = []
     if "agent" not in st.session_state:
         st.session_state.agent = None
+    if "memory_manager" not in st.session_state:
+        st.session_state.memory_manager = MemoryManager()
     if "current_problem" not in st.session_state:
         st.session_state.current_problem = None
     if "current_problem_type" not in st.session_state:
@@ -243,6 +246,142 @@ def create_problem_from_selection(problem_category, problem_type, **kwargs):
     except Exception as e:
         st.error(f"Error creating problem: {e}")
         return None
+
+def parse_problem_request(user_input: str) -> tuple:
+    """Parse natural language request to identify problem type and parameters."""
+    user_input_lower = user_input.lower()
+    
+    # Continuous Optimization
+    if any(keyword in user_input_lower for keyword in ["rastrigin", "optimize rastrigin", "minimize rastrigin"]):
+        dimension = extract_number(user_input, default=10)
+        return ("Continuous Optimization", "Rastrigin Function", {"dimension": dimension})
+    elif any(keyword in user_input_lower for keyword in ["ackley", "optimize ackley"]):
+        dimension = extract_number(user_input, default=10)
+        return ("Continuous Optimization", "Ackley Function", {"dimension": dimension})
+    elif any(keyword in user_input_lower for keyword in ["rosenbrock", "optimize rosenbrock"]):
+        dimension = extract_number(user_input, default=10)
+        return ("Continuous Optimization", "Rosenbrock Function", {"dimension": dimension})
+    elif any(keyword in user_input_lower for keyword in ["sphere function", "optimize sphere"]):
+        dimension = extract_number(user_input, default=10)
+        return ("Continuous Optimization", "Sphere Function", {"dimension": dimension})
+    
+    # Classification
+    elif any(keyword in user_input_lower for keyword in ["titanic", "classify titanic", "survival prediction"]):
+        return ("Classification", "Titanic Survival", {})
+    
+    # Clustering
+    elif any(keyword in user_input_lower for keyword in ["iris", "iris dataset", "iris clustering"]):
+        return ("Clustering", "Iris Dataset", {})
+    elif any(keyword in user_input_lower for keyword in ["mall customer", "customer segmentation"]):
+        return ("Clustering", "Mall Customers", {})
+    elif any(keyword in user_input_lower for keyword in ["synthetic cluster", "synthetic clustering"]):
+        n_clusters = extract_number(user_input, default=5)
+        return ("Clustering", "Synthetic Clustering", {"n_clusters": n_clusters})
+    
+    # TSP
+    elif any(keyword in user_input_lower for keyword in ["tsp", "traveling salesman", "tour"]):
+        if any(word in user_input_lower for word in ["random", "generate"]):
+            n_cities = extract_number(user_input, default=30)
+            return ("TSP (Traveling Salesman)", "Random TSP", {"n_cities": n_cities})
+        elif "berlin" in user_input_lower:
+            return ("TSP (Traveling Salesman)", "Berlin52", {})
+        elif "eil" in user_input_lower:
+            return ("TSP (Traveling Salesman)", "EIL51", {})
+        elif "kroa" in user_input_lower or "kro" in user_input_lower:
+            return ("TSP (Traveling Salesman)", "KroA100", {})
+        return ("TSP (Traveling Salesman)", "Random TSP", {"n_cities": 30})
+    
+    return None, None, {}
+
+def extract_number(text: str, default: int = 10) -> int:
+    """Extract first number from text, return default if none found."""
+    import re
+    numbers = re.findall(r'\b\d+\b', text)
+    return int(numbers[0]) if numbers else default
+
+def get_memory_context(agent, problem_type: str, problem_name: str = None) -> str:
+    """Get memory context from past optimization runs."""
+    memory_manager = st.session_state.memory_manager
+    
+    # Map problem type to memory category
+    category_map = {
+        "Continuous Optimization": "continuous_optimization",
+        "Classification": "classification",
+        "Clustering": "clustering",
+        "TSP (Traveling Salesman)": "combinatorial_optimization",
+    }
+    
+    memory_category = category_map.get(problem_type, problem_type)
+    
+    if problem_name:
+        return memory_manager.get_context_string(memory_category, problem_name, top_k=3)
+    return ""
+
+
+def show_tsp_distance_matrix(problem):
+    """Save and display TSP distance matrix in chat (scrollable HTML preview)."""
+    try:
+        dist_mat = getattr(problem, 'distance_matrix', None)
+        # Some TSP objects may compute the matrix on demand
+        if dist_mat is None and hasattr(problem, 'compute_distance_matrix'):
+            try:
+                dist_mat = problem.compute_distance_matrix()
+            except Exception:
+                dist_mat = None
+
+        if dist_mat is None:
+            return None
+
+        out_dir = project_root / "outputs" / "memory"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        instance = getattr(problem, 'instance_name', f"tsp_{getattr(problem, 'n_cities', 'unknown')}")
+        csv_path = out_dir / f"distance_matrix_{instance}.csv"
+        df_full = pd.DataFrame(dist_mat)
+        df_full.to_csv(csv_path, index=False)
+
+        max_preview = 20
+        if df_full.shape[0] > max_preview or df_full.shape[1] > max_preview:
+            df_preview = df_full.iloc[:max_preview, :max_preview]
+            preview_note = f"Showing first {max_preview}x{max_preview} of {df_full.shape[0]}x{df_full.shape[1]} matrix. Full matrix saved to {csv_path}."
+        else:
+            df_preview = df_full
+            preview_note = f"Full matrix saved to {csv_path}."
+
+        try:
+            html_table = df_preview.to_html(index=False, float_format='%.3f')
+        except Exception:
+            html_table = df_preview.head(10).to_html(index=False)
+
+        container_html = (
+            f"<strong>Distance matrix (rows = cities):</strong><br>"
+            f"<div style='max-height:420px; overflow:auto; border:1px solid #ddd; padding:8px; background:#fff;'>"
+            + html_table + "</div>"
+        )
+        container_html += f"<p style='font-size:0.9em;color:#666;'>{preview_note}</p>"
+
+        add_message("assistant", container_html)
+        return str(csv_path)
+    except Exception as e:
+        st.warning(f"Could not show distance matrix: {e}")
+        return None
+
+def process_agent_response(agent, user_input: str, problem):
+    """Process user input and get agent response with memory context."""
+    
+    # Get memory context if we have a problem
+    memory_context = ""
+    if problem:
+        problem_name = getattr(problem, 'problem_name', 'Unknown')
+        memory_context = get_memory_context(agent, st.session_state.current_problem_type, problem_name)
+    
+    # Prepare enhanced prompt with memory
+    enhanced_input = user_input
+    if memory_context:
+        enhanced_input = f"{memory_context}\n\nUser Request: {user_input}"
+    
+    # Get agent response (this would typically call the agent's chat method)
+    # For now, we'll just acknowledge and provide guidance
+    return f"I'm analyzing your request about {st.session_state.current_problem_type}. {memory_context if memory_context else 'No previous runs found for reference.'}"
 
 def get_available_methods(problem_category):
     """Get available methods based on problem category."""
@@ -623,6 +762,7 @@ The {recommendation.selected_method} algorithm optimized the {getattr(problem, '
 """
             
             add_message("assistant", result_text)
+            # (Distance matrix will be attached to the result summary below)
             
             # Step 4: Plot convergence
             if convergence_history:
@@ -645,6 +785,49 @@ The {recommendation.selected_method} algorithm optimized the {getattr(problem, '
                 'timestamp': datetime.now(),
                 'convergence_history': convergence_history
             }
+
+            # Attach distance matrix information for TSP now that result_summary exists
+            if st.session_state.current_problem_type == "TSP (Traveling Salesman)":
+                try:
+                    dist_mat = getattr(problem, 'distance_matrix', None)
+                    if dist_mat is not None:
+                        out_dir = project_root / "outputs" / "memory"
+                        out_dir.mkdir(parents=True, exist_ok=True)
+                        csv_path = out_dir / f"distance_matrix_{problem.instance_name}.csv"
+                        df_full = pd.DataFrame(dist_mat)
+                        df_full.to_csv(csv_path, index=False)
+
+                        # Prepare a safe preview for chat: truncate if large
+                        max_preview = 20
+                        preview_note = ""
+                        if df_full.shape[0] > max_preview or df_full.shape[1] > max_preview:
+                            df_preview = df_full.iloc[:max_preview, :max_preview]
+                            preview_note = f"Showing first {max_preview}x{max_preview} of {df_full.shape[0]}x{df_full.shape[1]} matrix. Full matrix saved to {csv_path}."
+                        else:
+                            df_preview = df_full
+
+                        try:
+                            html_table = df_preview.to_html(index=False, float_format='%.3f')
+                        except Exception:
+                            html_table = df_preview.head(10).to_html(index=False)
+
+                        container_html = (
+                            f"<strong>Distance matrix (rows = cities):</strong><br>"
+                            f"<div style='max-height:420px; overflow:auto; border:1px solid #ddd; padding:8px; background:#fff;'>"
+                            + html_table + "</div>"
+                        )
+
+                        if preview_note:
+                            container_html += f"<p style='font-size:0.9em;color:#666;'>{preview_note}</p>"
+                        else:
+                            container_html += f"<p style='font-size:0.9em;color:#666;'>Full matrix saved to {csv_path}.</p>"
+
+                        add_message("assistant", container_html)
+                        result_summary['distance_matrix_csv'] = str(csv_path)
+                        # Keep a small preview in the summary for quick reference
+                        result_summary['distance_matrix_preview'] = df_preview.values.tolist()
+                except Exception as e:
+                    st.warning(f"Could not process distance matrix: {e}")
             
             # Add type-specific metrics
             if st.session_state.current_problem_type == "Classification":
@@ -665,6 +848,54 @@ The {recommendation.selected_method} algorithm optimized the {getattr(problem, '
                 progress_placeholder.plotly_chart(fig, use_container_width=True, key="convergence_chart_2")
             
             st.session_state.results_history.append(result_summary)
+            
+            # Save to memory for future reference
+            try:
+                problem_type_map = {
+                    "Continuous Optimization": "continuous_optimization",
+                    "Classification": "classification",
+                    "Clustering": "clustering",
+                    "TSP (Traveling Salesman)": "combinatorial_optimization",
+                }
+                memory_category = problem_type_map.get(st.session_state.current_problem_type, st.session_state.current_problem_type)
+                
+                memory_entry = {
+                    "problem": problem.problem_name,
+                    "Method": recommendation.selected_method,
+                    "Parameters": recommendation.parameters,
+                    "Fitness": best_fitness,
+                    "Timestamp": datetime.now().isoformat()
+                }
+                
+                # Add type-specific metrics for memory
+                if st.session_state.current_problem_type == "Classification" and 'accuracy' in result_summary:
+                    memory_entry["F1_Score"] = result_summary['accuracy']
+                elif st.session_state.current_problem_type == "Clustering" and 'inertia' in result_summary:
+                    memory_entry["Silhouette"] = result_summary['inertia']
+                elif st.session_state.current_problem_type == "TSP (Traveling Salesman)":
+                    memory_entry["Tour_Length"] = result_summary['tour_length']
+                    # Save distance matrix CSV for memory and reference
+                    try:
+                        dist_mat = getattr(problem, 'distance_matrix', None)
+                        if dist_mat is not None:
+                            out_dir = project_root / "outputs" / "memory"
+                            out_dir.mkdir(parents=True, exist_ok=True)
+                            csv_path = out_dir / f"distance_matrix_{problem.instance_name}.csv"
+                            df_full = pd.DataFrame(dist_mat)
+                            df_full.to_csv(csv_path, index=False)
+                            memory_entry["Distance_Matrix_CSV"] = str(csv_path)
+                            # Also include a small preview for quick inspection in memory
+                            max_preview = 20
+                            if df_full.shape[0] > max_preview or df_full.shape[1] > max_preview:
+                                memory_entry["Distance_Matrix_Preview"] = df_full.iloc[:max_preview, :max_preview].values.tolist()
+                            else:
+                                memory_entry["Distance_Matrix_Preview"] = df_full.values.tolist()
+                    except Exception as e:
+                        st.warning(f"Could not save distance matrix to memory: {e}")
+                
+                st.session_state.memory_manager.save_memory(memory_category, memory_entry)
+            except Exception as e:
+                st.warning(f"Could not save to memory: {e}")
             
             return result_summary
             
@@ -838,7 +1069,6 @@ def main():
     
     # Header
     st.title("MetaMind AI Assistant")
-    st.markdown("*Intelligent optimization through conversational AI*")
     
     # Sidebar for configuration
     with st.sidebar:
@@ -942,6 +1172,11 @@ def main():
                         add_message("assistant", f"Wonderful! I'll solve this {problem_kwargs.get('n_cities', 'unknown')}-city TSP instance using evolutionary algorithms like Ant Colony Optimization to find the shortest route.")
                     else:
                         add_message("assistant", f"Great choice! The {problem_type} is a classic benchmark. I'll use evolutionary algorithms to find the optimal tour through this {getattr(problem, 'n_cities', 'unknown')}-city instance.")
+                    # Show distance matrix on creation for TSP problems
+                    try:
+                        show_tsp_distance_matrix(problem)
+                    except Exception:
+                        pass
         
         # Current problem info
         if st.session_state.current_problem:
@@ -973,16 +1208,58 @@ def main():
         if user_input:
             add_message("user", user_input)
             
-            # Process user input
-            if "compare" in user_input.lower() and st.session_state.current_problem:
+            # Try to parse problem request from natural language
+            parsed_category, parsed_type, parsed_kwargs = parse_problem_request(user_input)
+            
+            # If a problem type is detected in the input, create it automatically
+            if parsed_category and parsed_type and ("solve" in user_input.lower() or "optimize" in user_input.lower() or "cluster" in user_input.lower() or "classify" in user_input.lower()):
+                with st.spinner(f"Creating {parsed_category}..."):
+                    problem = create_problem_from_selection(parsed_category, parsed_type, **parsed_kwargs)
+                    if problem:
+                        st.session_state.current_problem = problem
+                        st.session_state.current_problem_type = parsed_category
+                        
+                        # Provide context-aware greeting
+                        problem_name = getattr(problem, 'problem_name', parsed_type)
+                        memory_context = get_memory_context(st.session_state.agent, parsed_category, problem_name)
+                        
+                        if memory_context:
+                            response = f"Perfect! I've created the {problem_name} problem. Based on my memory of past optimization runs:\n{memory_context}\nShould I solve this problem now?"
+                        else:
+                            response = f"Great! I've set up the {problem_name} problem. Ready to optimize! Would you like me to solve it now?"
+                        
+                        add_message("assistant", response)
+                        # If TSP, show distance matrix immediately after creation
+                        try:
+                            if parsed_category == "TSP (Traveling Salesman)":
+                                show_tsp_distance_matrix(problem)
+                        except Exception:
+                            pass
+                        st.rerun()
+            
+            # Process user commands
+            elif "compare" in user_input.lower() and st.session_state.current_problem:
                 st.session_state.comparing = True
                 st.rerun()
             elif "solve" in user_input.lower() and st.session_state.current_problem:
                 st.session_state.solving = True
                 st.rerun()
+            elif parsed_category and not ("solve" in user_input.lower() or "optimize" in user_input.lower()):
+                # User is asking about a problem type without solving
+                add_message("assistant", f"I can help you with {parsed_category}! Would you like me to create a {parsed_type} problem and solve it?")
+                st.rerun()
             else:
-                # General chat response
-                add_message("assistant", f"I understand you said: '{user_input}'. I'm designed to help with optimization problems. Please create a problem and ask me to solve it or compare multiple methods on it!")
+                # General chat response with memory if available
+                if st.session_state.current_problem:
+                    problem_name = getattr(st.session_state.current_problem, 'problem_name', 'current problem')
+                    memory_context = get_memory_context(st.session_state.agent, st.session_state.current_problem_type, problem_name)
+                    if memory_context:
+                        response = f"I understand you're working on {problem_name}. {memory_context} What would you like to do next?"
+                    else:
+                        response = f"I understand! Ready to help with {st.session_state.current_problem_type}. What would you like me to do?"
+                    add_message("assistant", response)
+                else:
+                    add_message("assistant", f"I understand: '{user_input}'. I'm here to help with optimization problems. You can ask me to optimize continuous functions, classify data, cluster datasets, or solve TSP problems. Try saying 'solve rastrigin function' or 'cluster iris dataset'!")
                 st.rerun()
     
     with col2:

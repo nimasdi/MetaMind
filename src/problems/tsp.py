@@ -198,30 +198,92 @@ class TSPProblem(BaseProblem):
         
         return tour, best_distance
     
-    def get_lkh_estimation(self, num_starts=20, use_2opt=True, time_limit=60):
+    def get_lkh_estimation(self, max_iterations=1000, time_limit=60, num_starts=None, use_2opt=None):
+        """
+        Implementation of Iterated Local Search (ILS).
+        Now includes 'num_starts' and 'use_2opt' as dummy arguments 
+        to prevent errors from older scripts calling this method.
+        """
         import time
         start_time = time.time()
         
-        best_tour = None
-        best_distance = float('inf')
+        # 1. Start with a random tour or NN tour
+        current_tour, current_dist = self.get_nearest_neighbor_tour()
+        # Always use 2-opt in this improved version, regardless of the flag
+        current_tour, current_dist = self.two_opt(current_tour)
         
-        start_cities = np.random.choice(self.n_cities, min(num_starts, self.n_cities), replace=False)
+        best_tour = list(current_tour)
+        best_dist = current_dist
         
-        for start_city in start_cities:
+        print(f"  ILS Start: {best_dist:.2f}")
+        
+        no_improv_count = 0
+        
+        for i in range(max_iterations):
             if time.time() - start_time > time_limit:
+                print(f"  Time limit reached during ILS.")
                 break
+                
+            # 2. Perturbation (The "Kick")
+            candidate_tour = self._double_bridge_kick(best_tour)
             
-            tour, distance = self.get_nearest_neighbor_tour(int(start_city))
+            # 3. Local Search
+            candidate_tour, candidate_dist = self.two_opt(candidate_tour)
             
-            if use_2opt:
-                tour, distance = self.two_opt(tour)
-            
-            if distance < best_distance:
-                best_distance = distance
-                best_tour = tour
+            # 4. Acceptance Criterion
+            if candidate_dist < best_dist:
+                best_dist = candidate_dist
+                best_tour = list(candidate_tour)
+                no_improv_count = 0
+                print(f"  New best found at step {i}: {best_dist:.2f}")
+            else:
+                no_improv_count += 1
+                
+            # Early exit/restart if stuck
+            if no_improv_count > 100:
+                # Soft restart
+                current_tour, _ = self.get_nearest_neighbor_tour(np.random.randint(0, self.n_cities))
+                current_tour, current_dist = self.two_opt(current_tour)
+                no_improv_count = 0
+
+        print(f"  LKH-Approximation finished: {best_dist:.2f}")
+        return best_tour, best_dist
+
+    def _double_bridge_kick(self, tour):
+        """
+        Performs a 'Double-Bridge' move (a specific 4-opt move).
+        This breaks 4 edges and reconnects them in a way 2-opt cannot immediately fix.
+        Used to escape local optima.
+        """
+        n = len(tour)
+        if n < 8:
+            # Too small for double bridge, just shuffle
+            new_tour = list(tour)
+            np.random.shuffle(new_tour)
+            return new_tour
+
+        # We need 4 cut points: a < b < c < d
+        # To avoid index errors, we pick 4 distinct sorted indices
+        cuts = sorted(np.random.choice(n, 4, replace=False))
+        a, b, c, d = cuts
         
-        print(f"  LKH estimation: {best_distance:.2f} (from {len(start_cities)} starts with 2-opt)")
-        return best_tour, best_distance
+        # A double bridge rearranges the tour segments:
+        # Original:  [0...a] [a+1...b] [b+1...c] [c+1...d] [d+1...end]
+        # Reordered: [0...a] [c+1...d] [b+1...c] [a+1...b] [d+1...end]
+        
+        # Note: In a list, slice [x:y] goes from x to y-1. 
+        # So we need to be careful with indices.
+        
+        p1 = tour[:a+1]          # segment A
+        p2 = tour[a+1:b+1]       # segment B
+        p3 = tour[b+1:c+1]       # segment C
+        p4 = tour[c+1:d+1]       # segment D
+        p5 = tour[d+1:]          # segment E
+        
+        # Reconnect: A -> D -> C -> B -> E
+        new_tour = p1 + p4 + p3 + p2 + p5
+        
+        return new_tour
     
     def solve_exact_branch_and_bound(self, time_limit=60):
         import time

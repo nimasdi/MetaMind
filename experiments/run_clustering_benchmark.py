@@ -20,15 +20,12 @@ sys.path.insert(0, str(project_root))
 env_path = Path(__file__).parent / ".env"
 load_dotenv(env_path)
 
-# Import Framework Components
 from src.problems.clustering import IrisProblem, MallCustomersProblem, SyntheticClusteringProblem
 from src.orchestrator.agent import MetaMindAgent
 
-# Import Utilities
 from src.utils.logging import get_experiment_logger, standard_progress_callback
 from src.utils.plotting import plot_box_comparison, plot_convergence
 
-# Import Methods
 from src.methods.neural.som import SOM
 from src.methods.neural.mlp import MLP
 from src.methods.neural.perceptron import Perceptron
@@ -41,7 +38,6 @@ from src.methods.fuzzy.controller import FuzzyController
 from src.orchestrator.memory import MemoryManager
 
 def get_method_class(method_name):
-    """Maps LLM string selection to actual Python class."""
     mapping = {
         'SOM': SOM, 'SelfOrganizingMap': SOM, 'Kohonen': SOM,
         'GA': GeneticAlgorithm, 'GeneticAlgorithm': GeneticAlgorithm,
@@ -51,8 +47,6 @@ def get_method_class(method_name):
     return mapping.get(method_name, SOM)
 
 def evaluate_clustering(X, labels, true_labels=None):
-    """Computes clustering metrics safely."""
-    # [CRITICAL FIX]: SOM predict returns (bmu_indices, distances).
     if isinstance(labels, tuple):
         labels = labels[0]
         
@@ -126,12 +120,10 @@ def print_feedback_analysis(interpretation, metrics, previous_best):
     print("-" * 60)
 
 def plot_feedback_progress(df, plots_dir):
-    """Plots the trajectory of Silhouette scores from Initial -> Feedback."""
     if df.empty: return
     
     plt.figure(figsize=(10, 6))
     
-    # Filter only sessions that have both Initial and Feedback
     sessions = df.groupby(['Problem', 'Session']).filter(lambda x: len(x) > 1)
     
     if sessions.empty:
@@ -139,7 +131,6 @@ def plot_feedback_progress(df, plots_dir):
         plt.close()
         return
 
-    # Plot lines connecting Initial to Feedback for each session
     sns.pointplot(
         data=sessions, 
         x='Loop_Stage', 
@@ -162,7 +153,6 @@ def plot_feedback_progress(df, plots_dir):
     print(f"Feedback progress plot saved to {path}")
 
 def run_clustering_benchmark():
-    # Setup Output
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_dir = project_root / "outputs" / "results"
     plots_dir = project_root / "outputs" / "figures"
@@ -184,7 +174,6 @@ def run_clustering_benchmark():
 
     agent = MetaMindAgent(api_key=api_key, verbose=False)
     
-    # --- Load Problems ---
     problems = []
     try:
         iris = IrisProblem()
@@ -208,11 +197,10 @@ def run_clustering_benchmark():
     except: pass
 
     all_results = []
-    convergence_plots_data = {} # Store history for plotting later
+    convergence_plots_data = {} 
 
     memory_manager = MemoryManager(output_dir=memory_dir)
 
-    # --- Benchmark Loop ---
     for problem in problems:
         logger.info(f"BENCHMARKING PROBLEM: {problem.problem_name}")
         
@@ -221,7 +209,6 @@ def run_clustering_benchmark():
         for session_idx in range(n_sessions):
             print(f"\n>>> Session {session_idx+1}/{n_sessions} for {problem.problem_name}")
             
-            # 1. Context Construction (Crucial for getting usable params)
             available_methods = {
                 'SOM': SOM.PARAM_SPECS,
                 'PSO': PSO.PARAM_SPECS,
@@ -235,7 +222,6 @@ def run_clustering_benchmark():
                 problem_name = problem.problem_name,
             )
             
-            # [CRITICAL] Hints to guide LLM away from "100 clusters" for 150 samples
             context_hint = "Maximize Silhouette Score."
             if "Iris" in problem.problem_name:
                 context_hint += " Dataset is small (150 samples). use VERY SMALL map_size (e.g. 2x2 or 3x3) to force distinct clusters."
@@ -258,7 +244,6 @@ def run_clustering_benchmark():
             
             print_llm_json_style(rec)
             
-            # 2. Execution Loop
             best_metrics_this_session = {'silhouette': -1.0}
             current_rec = rec
             max_feedback_loops = 1 
@@ -270,7 +255,6 @@ def run_clustering_benchmark():
 
                 MethodClass = get_method_class(current_rec.selected_method)
                 
-                # Parameter Fixes
                 params = current_rec.parameters.copy()
                 if 'map_size' in params and isinstance(params['map_size'], list):
                     params['map_size'] = tuple(params['map_size'])
@@ -281,7 +265,6 @@ def run_clustering_benchmark():
                 
                 start_time = time.time()
                 try:
-                    # Fit
                     fit_data = {'X': problem.X} 
                     if MethodClass == FuzzyController:
                         fit_data.update({'input_range': (np.min(problem.X), np.max(problem.X)), 'output_range': (0,1)})
@@ -289,12 +272,10 @@ def run_clustering_benchmark():
                     method.fit(fit_data, callback=standard_progress_callback)
                     exec_time = time.time() - start_time
                     
-                    # Capture Convergence History
                     if hasattr(method, 'convergence_history') and method.convergence_history:
                         key = f"{problem.problem_name}_{session_idx}_{run_type}"
                         convergence_plots_data[key] = method.convergence_history
 
-                    # Predict
                     labels = None
                     if hasattr(method, 'predict'):
                         labels = method.predict(problem.X)
@@ -305,7 +286,6 @@ def run_clustering_benchmark():
                     metrics = evaluate_clustering(problem.X, labels, problem.true_labels)
                     print(f"Result: Silhouette={metrics['silhouette']:.4f} | Clusters={metrics['n_clusters']}")
                     
-                    # Store Result
                     result_entry = {
                         'Problem': problem.problem_name,
                         'Session': session_idx + 1,
@@ -325,7 +305,6 @@ def run_clustering_benchmark():
                             entry=result_entry 
                         )
 
-                    # 3. Interpret
                     if loop_i < max_feedback_loops:
                         interpretation = agent.interpret_results(
                             problem_info=problem_info,
@@ -358,17 +337,12 @@ def run_clustering_benchmark():
                     logger.error(f"Execution failed: {e}")
                     break
 
-    # -----------------------------------------------------------------------------
-    # 3. Final Outputs & Visualization
-    # -----------------------------------------------------------------------------
     if all_results:
-        # Save Data
         df = pd.DataFrame(all_results)
         df.to_csv(output_dir / "clustering_summary.csv", index=False)
         with open(output_dir / f"clustering_results_{timestamp}.json", 'w') as f:
             json.dump(all_results, f, indent=4, default=str)
         
-        # 1. Box Plot (Using Utility)
         try:
             box_data = {}
             for (prob, stage), group in df.groupby(['Problem', 'Loop_Stage']):
@@ -383,16 +357,12 @@ def run_clustering_benchmark():
             )
         except Exception as e: logger.error(f"Boxplot error: {e}")
 
-        # 2. Feedback Progress Plot (New Custom Plot)
         try:
             plot_feedback_progress(df, plots_dir)
         except Exception as e: logger.error(f"Feedback plot error: {e}")
 
-        # 3. Convergence Plots (Using Utility)
         try:
-            # Plot one representative convergence curve per problem
             for prob in [p.problem_name for p in problems]:
-                # Find a key matching this problem
                 keys = [k for k in convergence_plots_data.keys() if prob in k and "Initial" in k]
                 if keys:
                     history = convergence_plots_data[keys[0]]

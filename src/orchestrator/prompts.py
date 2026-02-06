@@ -1,15 +1,9 @@
-"""
-Prompt templates for MetaMind orchestrator.
-Contains system prompts and context builders for LLM-based method selection.
-"""
-
 import json
 from typing import Dict, Any, List
 from src.core.types import ProblemType, MethodCategory, OptimizationType
 
 
 class PromptBuilder:
-    """Builds comprehensive prompts for the MetaMind agent."""
     
     METHOD_DESCRIPTIONS = {
         "ACO": {
@@ -97,15 +91,7 @@ class PromptBuilder:
     
     @staticmethod
     def build_system_prompt(available_methods: Dict[str, Dict[str, Any]]) -> str:
-        """
-        Builds the system prompt that instructs the LLM to act as a CI architect.
-        
-        Args:
-            available_methods: Dictionary of method names to their PARAM_SPECS
-            
-        Returns:
-            Complete system prompt string
-        """
+
         methods_info = PromptBuilder._format_methods_info(available_methods)
         
         system_prompt = f"""You are an expert Computational Intelligence (CI) Architect with deep knowledge of neural networks, fuzzy systems, and evolutionary algorithms.
@@ -212,15 +198,7 @@ class PromptBuilder:
     
     @staticmethod
     def build_problem_context(problem_info: Dict[str, Any]) -> str:
-        """
-        Builds a concise context string from problem information.
-        
-        Args:
-            problem_info: Output from problem.get_info()
-            
-        Returns:
-            Formatted problem context
-        """
+
         context = [
             f"Problem Name: {problem_info.get('name', 'Unknown')}",
             f"Problem Type: {problem_info.get('type', 'Unknown')}",
@@ -254,17 +232,7 @@ class PromptBuilder:
         previous_result: Dict[str, Any],
         previous_recommendation: Dict[str, Any]
     ) -> str:
-        """
-        Builds a feedback loop prompt to suggest parameter adjustments.
-        
-        Args:
-            problem_info: Problem description
-            previous_result: Results from previous execution
-            previous_recommendation: Previous LLM recommendation
-            
-        Returns:
-            Feedback prompt for next iteration
-        """
+
         gap_percentage = previous_result.get('metrics', {}).get('gap_percentage', 'unknown')
         current_best = previous_result.get('best_fitness', 'unknown')
         method_used = previous_recommendation.get('selected_method', 'Unknown')

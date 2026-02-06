@@ -7,11 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class LLMRecommendationSchema(BaseModel):
-    """
-    Schema for LLM recommendations.
-    Ensures the LLM output matches expected structure via Pydantic validation.
-    """
-    
+
     selected_method: str = Field(
         ...,
         description="Name of the CI method class to use (e.g., 'ACO', 'GA', 'MLP')"
@@ -50,7 +46,6 @@ class LLMRecommendationSchema(BaseModel):
     @field_validator('confidence')
     @classmethod
     def validate_confidence(cls, v: float) -> float:
-        """Ensure confidence is valid probability."""
         if not (0.0 <= v <= 1.0):
             raise ValueError("Confidence must be between 0.0 and 1.0")
         return round(v, 3)
@@ -58,15 +53,12 @@ class LLMRecommendationSchema(BaseModel):
     @field_validator('expected_performance')
     @classmethod
     def validate_performance(cls, v: str) -> str:
-        """Ensure performance is valid level, with flexible mapping."""
         v_lower = v.lower().strip()
         
-        # Direct matches
         valid_levels = {'low', 'medium', 'high'}
         if v_lower in valid_levels:
             return v_lower
         
-        # Map common variations to standard levels
         performance_mapping = {
             'medium-high': 'high',
             'medium high': 'high',
@@ -84,7 +76,6 @@ class LLMRecommendationSchema(BaseModel):
         return v.lower()
     
     class Config:
-        """Pydantic config."""
         json_schema_extra = {
             "example": {
                 "selected_method": "ACO",
@@ -106,11 +97,6 @@ class LLMRecommendationSchema(BaseModel):
 
 
 class FeedbackRecommendationSchema(LLMRecommendationSchema):
-    """
-    Schema for feedback-based parameter adjustments.
-    Extends LLMRecommendationSchema with additional feedback context.
-    """
-    
     adjustment_reason: str = Field(
         ...,
         description="Explanation of why these parameters were adjusted"
@@ -126,8 +112,6 @@ class FeedbackRecommendationSchema(LLMRecommendationSchema):
 
 
 class ExecutionSummarySchema(BaseModel):
-    """Summary of a method execution."""
-    
     method_name: str
     problem_name: str
     best_fitness: float
@@ -139,11 +123,6 @@ class ExecutionSummarySchema(BaseModel):
 
 
 class OrchestrationSessionSchema(BaseModel):
-    """
-    Schema for an orchestration session.
-    Tracks a complete solve from recommendation to execution.
-    """
-    
     session_id: str
     problem_name: str
     problem_type: str
@@ -242,15 +221,12 @@ class MultiMethodResultAnalysisSchema(BaseModel):
     @field_validator('confidence')
     @classmethod
     def validate_confidence(cls, v: float) -> float:
-        """Ensure confidence is valid probability."""
         if not (0.0 <= v <= 1.0):
             raise ValueError("Confidence must be between 0.0 and 1.0")
         return round(v, 3)
 
 
 class OrchestratorStatsSchema(BaseModel):
-    """Statistics about orchestrator usage."""
-    
     total_problems_solved: int
     total_executions: int
     agent_calls: int

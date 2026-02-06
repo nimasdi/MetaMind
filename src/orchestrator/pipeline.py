@@ -1,8 +1,3 @@
-"""
-MetaMind Orchestrator Pipeline - Central orchestration engine.
-Coordinates method selection, execution, feedback loops, and result interpretation.
-"""
-
 import logging
 import time
 from typing import Dict, Any, Optional, Tuple, Type
@@ -20,12 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class Orchestrator:
-    """
-    Central orchestration engine for MetaMind framework.
-    Handles method selection, execution, and feedback loops.
-    """
-    
-    # Method registry mapping method names to their classes
     METHOD_REGISTRY: Dict[str, Type[BaseMethod]] = {}
     
     def __init__(
@@ -36,16 +25,7 @@ class Orchestrator:
         enable_feedback_loop: bool = True,
         max_feedback_iterations: int = 2
     ):
-        """
-        Initialize the Orchestrator.
-        
-        Args:
-            api_key: Google API key for LLM
-            model: LLM model identifier
-            verbose: Enable logging
-            enable_feedback_loop: Enable parameter tuning feedback loop
-            max_feedback_iterations: Maximum feedback iterations
-        """
+
         self.agent = MetaMindAgent(
             api_key=api_key,
             model=model,
@@ -56,7 +36,6 @@ class Orchestrator:
         self.max_feedback_iterations = max_feedback_iterations
         self.execution_history = []
         
-        # Auto-register methods if not already done
         if not self.METHOD_REGISTRY:
             self._register_default_methods()
         
@@ -65,7 +44,6 @@ class Orchestrator:
     
     @classmethod
     def _register_default_methods(cls):
-        """Register default methods from mapping."""
         method_mapping = get_default_method_mapping()
         
         for method_name, import_path in method_mapping.items():
@@ -80,13 +58,6 @@ class Orchestrator:
     
     @classmethod
     def register_method(cls, name: str, method_class: Type[BaseMethod]) -> None:
-        """
-        Register a custom method.
-        
-        Args:
-            name: Method name
-            method_class: Method class (must inherit from BaseMethod)
-        """
         if not issubclass(method_class, BaseMethod):
             raise TypeError(f"{method_class} must inherit from BaseMethod")
         cls.METHOD_REGISTRY[name] = method_class
@@ -94,12 +65,6 @@ class Orchestrator:
             logger.info(f"Registered custom method: {name}")
     
     def get_available_methods_specs(self) -> Dict[str, Dict[str, Any]]:
-        """
-        Get PARAM_SPECS for all registered methods.
-        
-        Returns:
-            Dictionary mapping method names to their parameter specifications
-        """
         specs = {}
         for name, method_class in self.METHOD_REGISTRY.items():
             specs[name] = method_class.PARAM_SPECS
@@ -162,34 +127,21 @@ class Orchestrator:
         problem: BaseProblem,
         context: Optional[str] = None
     ) -> Tuple[ExecutionResult, Dict[str, Any]]:
-        """
-        Solve a problem using the orchestrator pipeline.
-        Main entry point for the framework.
-        
-        Args:
-            problem: Problem instance (inherits from BaseProblem)
-            context: Optional additional context for LLM
-            
-        Returns:
-            Tuple of (ExecutionResult, LLM recommendation)
-        """
         start_time = time.time()
         
         if self.verbose:
             logger.info(f"Starting solve for: {problem.problem_name}")
         
-        # Phase 1: Get problem information
+
         problem_info = problem.get_info()
         available_methods = self.get_available_methods_specs()
-        
-        # Phase 2: Get LLM recommendation
+
         recommendation = self.agent.get_recommendation(
             problem_info=problem_info,
             available_methods=available_methods,
             context=context
         )
-        
-        # Phase 3: Instantiate and execute method
+
         problem_data = self._prepare_problem_data(problem)
         method_instance = self._instantiate_method(
             recommendation.selected_method,
@@ -197,8 +149,7 @@ class Orchestrator:
         )
 
         my_callback = self._create_progress_callback(verbose=self.verbose)
-        
-        # Execute fit
+
         method_instance.fit(problem_data, callback=my_callback)
         initial_results = method_instance.get_results()
         initial_metrics = problem.compute_metrics(initial_results.get('best_solution'))
@@ -208,8 +159,7 @@ class Orchestrator:
                 f"Initial execution complete. "
                 f"Best fitness: {initial_metrics.get('fitness', 'N/A')}"
             )
-        
-        # Phase 4: Feedback loop (optional)
+
         final_results = initial_results
         final_metrics = initial_metrics
         final_recommendation = recommendation.model_dump()
@@ -220,14 +170,12 @@ class Orchestrator:
             if self.verbose:
                 logger.info(f"Gap to optimal: {gap:.2f}%. Starting feedback loop...")
             
-            # Iteratively improve if gap is significant
             for iteration in range(1, self.max_feedback_iterations + 1):
-                if gap < 5.0:  # Good enough
+                if gap < 5.0:
                     if self.verbose:
                         logger.info(f"Gap below 5%. Stopping feedback loop.")
                     break
                 
-                # Get feedback recommendation
                 feedback_rec = self.agent.get_feedback_recommendation(
                     problem_info=problem_info,
                     available_methods=available_methods,
@@ -245,7 +193,6 @@ class Orchestrator:
                         f"(confidence: {feedback_rec.confidence:.2f})"
                     )
                 
-                # Re-execute with adjusted parameters
                 problem_data = self._prepare_problem_data(problem)
                 method_instance = self._instantiate_method(
                     feedback_rec.selected_method,
@@ -256,7 +203,6 @@ class Orchestrator:
                 new_results = method_instance.get_results()
                 new_metrics = problem.compute_metrics(new_results.get('best_solution'))
                 
-                # Check for improvement
                 if new_metrics.get('fitness', float('inf')) < final_metrics.get('fitness', float('inf')):
                     final_results = new_results
                     final_metrics = new_metrics
@@ -270,7 +216,6 @@ class Orchestrator:
                         logger.info("No improvement. Stopping feedback loop.")
                     break
         
-        # Phase 5: Create execution result
         execution_time = time.time() - start_time
         
         execution_result = ExecutionResult(
@@ -288,7 +233,6 @@ class Orchestrator:
             error_message=None
         )
         
-        # Phase 6: LLM Interpretation and Recommendations
         try:
             if self.verbose:
                 logger.info("Starting result interpretation...")
@@ -314,9 +258,8 @@ class Orchestrator:
                 )
         except Exception as e:
             logger.warning(f"Could not generate result interpretation: {e}")
-            # Continue without interpretation rather than failing
         
-        # Store in history
+
         self.execution_history.append({
             'problem': problem.problem_name,
             'method': final_recommendation.get('selected_method'),
@@ -349,11 +292,9 @@ class Orchestrator:
                 f"{problem.problem_name}"
             )
         
-        # Phase 1: Get problem information
         problem_info = problem.get_info()
         available_methods = self.get_available_methods_specs()
-        
-        # Phase 2: Get multi-method recommendation from LLM
+
         multi_recommendation = self.agent.get_multi_method_recommendation(
             problem_info=problem_info,
             available_methods=available_methods,
@@ -365,8 +306,7 @@ class Orchestrator:
             logger.info(
                 f"Selected methods: {', '.join(multi_recommendation.selected_methods)}"
             )
-        
-        # Phase 3: Execute all methods
+
         all_results = {}
         all_execution_results = {}
         
@@ -376,11 +316,9 @@ class Orchestrator:
             
             try:
                 method_start = time.time()
-                
-                # Get parameters for this method
+
                 parameters = multi_recommendation.method_parameters.get(method_name, {})
                 
-                # Instantiate and execute method
                 problem_data = self._prepare_problem_data(problem)
                 method_instance = self._instantiate_method(method_name, parameters)
                 
@@ -391,8 +329,7 @@ class Orchestrator:
                 metrics = problem.compute_metrics(results.get('best_solution'))
                 
                 method_time = time.time() - method_start
-                
-                # Store execution details for LLM analysis
+
                 all_results[method_name] = {
                     'best_fitness': metrics.get('fitness', float('nan')),
                     'execution_time': method_time,
@@ -401,8 +338,7 @@ class Orchestrator:
                     'success': True,
                     'convergence_history': method_instance.convergence_history
                 }
-                
-                # Store full execution result
+
                 all_execution_results[method_name] = ExecutionResult(
                     method_name=method_name,
                     problem_name=problem.problem_name,
@@ -435,8 +371,7 @@ class Orchestrator:
                     'error': str(e)
                 }
                 all_execution_results[method_name] = None
-        
-        # Phase 4: LLM analyzes all results and recommends the best
+
         if self.verbose:
             logger.info("Analyzing results with LLM...")
         
@@ -444,13 +379,11 @@ class Orchestrator:
             problem_info=problem_info,
             execution_results=all_results
         )
-        
-        # Phase 5: Select the best result based on LLM recommendation
+
         best_method = analysis.recommended_method
         best_execution_result = all_execution_results.get(best_method)
         
         if best_execution_result is None:
-            # Fallback: pick method with best fitness if LLM recommendation failed
             successful_methods = {
                 m: r for m, r in all_execution_results.items() if r is not None
             }
@@ -470,7 +403,6 @@ class Orchestrator:
                 f"using {best_method} instead"
             )
         
-        # Add multi-method analysis to the best result
         best_execution_result.interpretation = {
             'multi_method_analysis': analysis.model_dump(),
             'all_method_results': {
@@ -484,8 +416,7 @@ class Orchestrator:
         }
         
         total_time = time.time() - start_time
-        
-        # Store in history
+ 
         self.execution_history.append({
             'problem': problem.problem_name,
             'mode': 'multi_method',
@@ -510,16 +441,6 @@ class Orchestrator:
         problems: list,
         contexts: Optional[Dict[str, str]] = None
     ) -> Dict[str, Tuple[ExecutionResult, Dict[str, Any]]]:
-        """
-        Solve multiple problems.
-        
-        Args:
-            problems: List of problem instances
-            contexts: Optional mapping of problem names to contexts
-            
-        Returns:
-            Dictionary mapping problem names to (result, recommendation) tuples
-        """
         results = {}
         contexts = contexts or {}
         
@@ -535,19 +456,13 @@ class Orchestrator:
         return results
     
     def get_stats(self) -> Dict[str, Any]:
-        """
-        Get orchestrator statistics.
-        
-        Returns:
-            Statistics dictionary
-        """
         return {
             'total_executions': len(self.execution_history),
             'agent_calls': self.agent.call_count,
             'registered_methods': len(self.METHOD_REGISTRY),
             'methods': list(self.METHOD_REGISTRY.keys()),
             'agent_stats': self.agent.get_stats(),
-            'execution_history': self.execution_history[-10:]  # Last 10
+            'execution_history': self.execution_history[-10:]  
         }
 
 

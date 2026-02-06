@@ -17,11 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class MetaMindAgent:
-    """
-    Intelligent agent that uses Groq's LLM to select and configure CI methods.
-    Leverages JSON mode for structured outputs and Pydantic validation.
-    """
-    
+
     def __init__(
         self,
         api_key: str,
@@ -30,16 +26,7 @@ class MetaMindAgent:
         max_tokens: int = 4096,
         verbose: bool = True
     ):
-        """
-        Initialize the MetaMind Agent.
-        
-        Args:
-            api_key: DeepInfra API key
-            model: Model identifier (default: meta-llama/Meta-Llama-3.1-70B-Instruct)
-            temperature: LLM temperature for creativity vs consistency
-            max_tokens: Maximum response tokens
-            verbose: Enable logging
-        """
+
         self.client = OpenAI(
             api_key=api_key,
             base_url="https://api.deepinfra.com/v1/openai",
@@ -59,24 +46,10 @@ class MetaMindAgent:
         available_methods: Dict[str, Dict[str, Any]],
         context: Optional[str] = None
     ) -> LLMRecommendationSchema:
-        """
-        Get LLM recommendation for method selection and parameter configuration.
-        
-        Args:
-            problem_info: Problem metadata from problem.get_info()
-            available_methods: Dictionary mapping method names to PARAM_SPECS
-            context: Optional additional context for the LLM
-            
-        Returns:
-            LLMRecommendationSchema with selected method and parameters
-            
-        Raises:
-            ValueError: If response cannot be parsed or validation fails
-            Exception: If Groq API call fails
-        """
+
         self.call_count += 1
         
-        # Build system and user prompts
+
         system_prompt = PromptBuilder.build_system_prompt(available_methods)
         problem_context = PromptBuilder.build_problem_context(problem_info)
         
@@ -111,8 +84,7 @@ class MetaMindAgent:
                 logger.debug(f"Raw LLM response length: {len(response_text)} chars")
                 print(f"\n{'='*60}\nLLM MULTI-METHOD RECOMMENDATION:\n{'='*60}\n{response_text}\n{'='*60}\n")
                 logger.debug(f"Raw LLM response: {response_text[:200]}...")
-            
-            # Check for incomplete JSON (common signs of truncation)
+
             if not response_text.strip().endswith('}'):
                 logger.warning("Response appears truncated (doesn't end with '}')")
                 logger.error(f"Full truncated response:\n{response_text}")
@@ -150,19 +122,6 @@ class MetaMindAgent:
         previous_result: Dict[str, Any],
         previous_recommendation: Dict[str, Any]
     ) -> LLMRecommendationSchema:
-        """
-        Get LLM feedback for parameter tuning based on previous execution.
-        Implements the feedback loop for iterative improvement.
-        
-        Args:
-            problem_info: Problem metadata
-            available_methods: Available methods and their specs
-            previous_result: Results from previous execution
-            previous_recommendation: Previous LLM recommendation
-            
-        Returns:
-            Updated LLMRecommendationSchema with adjusted parameters
-        """
         system_prompt = PromptBuilder.build_system_prompt(available_methods)
         feedback_prompt = PromptBuilder.build_feedback_prompt(
             problem_info,
@@ -203,76 +162,58 @@ class MetaMindAgent:
         execution_result: Dict[str, Any],
         recommendation: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """
-        Step 6: Interpret execution results and provide analysis.
-        Analyzes performance, compares with expected, explains results,
-        and provides improvement recommendations.
-        
-        Args:
-            problem_info: Problem information from problem.get_info()
-            execution_result: Execution result metrics
-            recommendation: The LLM recommendation that was used
-            
-        Returns:
-            Dictionary with interpretation including:
-            - performance_assessment: 'excellent'/'good'/'acceptable'/'poor'
-            - performance_explanation: Natural language explanation
-            - comparison_with_expected: How actual compares to expected
-            - improvement_recommendations: List of tuples (type, suggestion)
-            - confidence_assessment: Confidence in the solution
-            - next_steps: Suggested next steps
-        """
+
         prompt = f"""
-You are an expert in computational intelligence methods. Analyze the following execution results and provide a comprehensive interpretation.
+                    You are an expert in computational intelligence methods. Analyze the following execution results and provide a comprehensive interpretation.
 
-## Problem Information:
-{json.dumps(problem_info, indent=2)}
+                    ## Problem Information:
+                    {json.dumps(problem_info, indent=2)}
 
-## Execution Result:
-- Method used: {recommendation.get('selected_method')}
-- Parameters: {json.dumps(recommendation.get('parameters', {}), indent=2)}
-- Best fitness: {execution_result.get('best_fitness')}
-- Expected performance: {recommendation.get('expected_performance')}
-- Computation time: {execution_result.get('execution_time'):.2f}s
-- Iterations: {execution_result.get('iterations')}
-- Gap from optimal: {execution_result.get('metrics', {}).get('gap_percentage', 'N/A')}%
+                    ## Execution Result:
+                    - Method used: {recommendation.get('selected_method')}
+                    - Parameters: {json.dumps(recommendation.get('parameters', {}), indent=2)}
+                    - Best fitness: {execution_result.get('best_fitness')}
+                    - Expected performance: {recommendation.get('expected_performance')}
+                    - Computation time: {execution_result.get('execution_time'):.2f}s
+                    - Iterations: {execution_result.get('iterations')}
+                    - Gap from optimal: {execution_result.get('metrics', {}).get('gap_percentage', 'N/A')}%
 
-## Your Analysis Task:
-Provide a structured analysis with:
+                    ## Your Analysis Task:
+                    Provide a structured analysis with:
 
-1. **Performance Assessment**: Rate as 'excellent' (gap < 1%), 'good' (gap 1-5%), 'acceptable' (gap 5-15%), or 'poor' (gap > 15%)
+                    1. **Performance Assessment**: Rate as 'excellent' (gap < 1%), 'good' (gap 1-5%), 'acceptable' (gap 5-15%), or 'poor' (gap > 15%)
 
-2. **Performance Explanation**: Explain the results in natural language:
-   - Was convergence smooth or erratic?
-   - Did the method find the solution quickly or slowly?
-   - Is the computation time reasonable?
+                    2. **Performance Explanation**: Explain the results in natural language:
+                    - Was convergence smooth or erratic?
+                    - Did the method find the solution quickly or slowly?
+                    - Is the computation time reasonable?
 
-3. **Comparison with Expected**: How does actual performance compare to the expected performance?
+                    3. **Comparison with Expected**: How does actual performance compare to the expected performance?
 
-4. **Improvement Recommendations**: Provide specific, actionable suggestions:
-   - Parameter tuning suggestions (e.g., "increase population_size to 150")
-   - Alternative method recommendations (e.g., "try GA for better exploration")
-   - Hybrid approach suggestions (e.g., "combine with local search")
+                    4. **Improvement Recommendations**: Provide specific, actionable suggestions:
+                    - Parameter tuning suggestions (e.g., "increase population_size to 150")
+                    - Alternative method recommendations (e.g., "try GA for better exploration")
+                    - Hybrid approach suggestions (e.g., "combine with local search")
 
-5. **Confidence Assessment**: Rate confidence as 'HIGH' (solution is reliable), 'MEDIUM' (acceptable but could improve), or 'LOW' (needs improvement)
+                    5. **Confidence Assessment**: Rate confidence as 'HIGH' (solution is reliable), 'MEDIUM' (acceptable but could improve), or 'LOW' (needs improvement)
 
-6. **Next Steps**: What should be tried next?
+                    6. **Next Steps**: What should be tried next?
 
-Format your response as VALID JSON with these exact keys:
-{{
-    "performance_assessment": "good|excellent|acceptable|poor",
-    "performance_explanation": "...",
-    "comparison_with_expected": "...",
-    "improvement_recommendations": [
-        {{"type": "parameter_tuning|alternative_method|hybrid_approach", "suggestion": "..."}},
-        ...
-    ],
-    "confidence_assessment": "HIGH|MEDIUM|LOW",
-    "next_steps": ["step1", "step2", ...]
-}}
+                    Format your response as VALID JSON with these exact keys:
+                    {{
+                        "performance_assessment": "good|excellent|acceptable|poor",
+                        "performance_explanation": "...",
+                        "comparison_with_expected": "...",
+                        "improvement_recommendations": [
+                            {{"type": "parameter_tuning|alternative_method|hybrid_approach", "suggestion": "..."}},
+                            ...
+                        ],
+                        "confidence_assessment": "HIGH|MEDIUM|LOW",
+                        "next_steps": ["step1", "step2", ...]
+                    }}
 
-IMPORTANT: Keep all text fields CONCISE and use proper JSON escaping. Avoid quotes within strings or use escaped quotes (\\")
-"""
+                    IMPORTANT: Keep all text fields CONCISE and use proper JSON escaping. Avoid quotes within strings or use escaped quotes (\\")
+                    """
         
         try:
             response = self.client.chat.completions.create(
@@ -289,13 +230,11 @@ IMPORTANT: Keep all text fields CONCISE and use proper JSON escaping. Avoid quot
             
             self.call_count += 1
             
-            # Parse the response with better error handling
             try:
                 interpretation = json.loads(response_text)
             except json.JSONDecodeError as json_err:
                 logger.error(f"JSON decode error: {json_err}")
                 logger.debug(f"Raw response text: {response_text[:500]}...")
-                # Try to extract JSON if it's wrapped in markdown code blocks
                 if "```json" in response_text:
                     json_start = response_text.find("```json") + 7
                     json_end = response_text.find("```", json_start)
@@ -360,8 +299,7 @@ IMPORTANT: Keep all text fields CONCISE and use proper JSON escaping. Avoid quot
             
             if self.verbose:
                 logger.debug(f"Raw LLM response length: {len(response_text)} chars")
-            
-            # Check for truncation
+
             if not response_text.strip().endswith('}'):
                 logger.warning("Response appears truncated")
                 raise ValueError(
@@ -396,26 +334,8 @@ IMPORTANT: Keep all text fields CONCISE and use proper JSON escaping. Avoid quot
         problem_info: Dict[str, Any],
         execution_results: Dict[str, Dict[str, Any]]
     ) -> MultiMethodResultAnalysisSchema:
-        """
-        Analyze results from multiple method executions and recommend the best.
-        This is the final step in multi-method orchestration.
-        
-        Args:
-            problem_info: Problem metadata
-            execution_results: Dictionary mapping method names to execution results
-                             Each result should contain: best_fitness, execution_time, 
-                             iterations, metrics, success
-            
-        Returns:
-            MultiMethodResultAnalysisSchema with recommended method and analysis
-            
-        Raises:
-            ValueError: If response cannot be parsed or validation fails
-            Exception: If API call fails
-        """
         self.call_count += 1
-        
-        # Build analysis prompt
+
         analysis_prompt = PromptBuilder.build_multi_result_analysis_prompt(
             problem_info,
             execution_results

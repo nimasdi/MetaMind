@@ -30,7 +30,8 @@ from src.utils.preprocessing import preprocess_titanic
 
 # Import Utilities
 from src.utils.logging import get_experiment_logger, standard_progress_callback
-from src.utils.plotting import plot_box_comparison, plot_convergence
+from src.utils.plotting import plot_box_comparison, plot_convergence, plot_convergence_with_bands
+from src.utils.metrics import pairwise_wilcoxon_comparison, print_wilcoxon_summary
 
 # Import Methods
 from src.methods.neural.mlp import MLP
@@ -154,6 +155,128 @@ def plot_feedback_progress(df, plots_dir):
     path = plots_dir / "classification_feedback_progress.png"
     plt.savefig(path)
     plt.close()
+
+def perform_statistical_analysis(df, output_dir, logger):
+    """Perform Wilcoxon statistical tests on classification results."""
+    print("\n" + "="*80)
+    print("STATISTICAL ANALYSIS - WILCOXON TEST RESULTS")
+    print("="*80)
+    
+    # 1. Test Initial vs Feedback
+    print("\n1. WILCOXON SIGNED-RANK TEST: Initial vs Feedback")
+    print("-" * 80)
+    
+    initial_feedback_stats = {}
+    
+    initial_scores = df[df['Loop_Stage'] == 'Initial']['F1_Score'].values
+    feedback_scores = df[df['Loop_Stage'] == 'Feedback']['F1_Score'].values
+    
+    if len(initial_scores) > 0 and len(feedback_scores) > 0:
+        min_len = min(len(initial_scores), len(feedback_scores))
+        initial_scores = initial_scores[:min_len]
+        feedback_scores = feedback_scores[:min_len]
+        
+        try:
+            from scipy.stats import wilcoxon
+            stat, p_value = wilcoxon(initial_scores, feedback_scores)
+            
+            initial_feedback_stats['Titanic'] = {
+                'initial_mean': np.mean(initial_scores),
+                'feedback_mean': np.mean(feedback_scores),
+                'p_value': p_value,
+                'significant': p_value < 0.05
+            }
+            
+            sig_marker = "***" if p_value < 0.05 else "ns"
+            print(f"Titanic: Initial: {np.mean(initial_scores):.4f} -> Feedback: {np.mean(feedback_scores):.4f} | p={p_value:.4f} {sig_marker}")
+        except Exception as e:
+            logger.error(f"Wilcoxon test error: {e}")
+    
+    # 2. Test between different methods
+    print("\n2. PAIRWISE WILCOXON TEST: Method Comparison")
+    print("-" * 80)
+    
+    method_data = {}
+    for method in df['Method'].unique():
+        method_scores = df[df['Method'] == method]['F1_Score'].values
+        if len(method_scores) > 0:
+            method_data[method] = method_scores.tolist()
+    
+    if len(method_data) > 1:
+        comparison_results = pairwise_wilcoxon_comparison(method_data)
+        
+        methods = comparison_results['methods']
+        p_values = comparison_results['p_values']
+        
+        for i in range(len(methods)):
+            for j in range(i + 1, len(methods)):
+                p_val = p_values[i, j]
+                sig = "***" if (not np.isnan(p_val) and p_val < comparison_results['alpha_corrected']) else "ns"
+                print(f"{methods[i]:15} vs {methods[j]:15} | p={p_val:.4f} {sig}")
+        
+        print_wilcoxon_summary(comparison_results, "Method Performance Comparison")
+    
+    # 3. Save statistical summary
+    stats_file = output_dir / "wilcoxon_statistical_analysis.txt"
+    with open(stats_file, 'w') as f:
+        f.write("="*80 + "\n")
+        f.write("WILCOXON STATISTICAL TEST RESULTS\n")
+        f.write("="*80 + "\n\n")
+        
+        f.write("1. INITIAL vs FEEDBACK (Paired Wilcoxon Signed-Rank Test)\n")
+        f.write("-" * 80 + "\n")
+        for problem, stats in initial_feedback_stats.items():
+            sig = "SIGNIFICANT (p<0.05)" if stats['significant'] else "NOT SIGNIFICANT"
+            f.write(f"{problem}:\n")
+            f.write(f"  Initial Mean F1-Score:  {stats['initial_mean']:.4f}\n")
+            f.write(f"  Feedback Mean F1-Score: {stats['feedback_mean']:.4f}\n")
+            f.write(f"  P-value: {stats['p_value']:.4f} ({sig})\n\n")
+        
+        f.write("\n2. METHOD COMPARISON (Bonferroni-Corrected Pairwise Wilcoxon Tests)\n")
+        f.write("-" * 80 + "\n")
+        if len(method_data) > 1:
+            comparison_results = pairwise_wilcoxon_comparison(method_data)
+            f.write(f"Bonferroni-corrected significance level: {comparison_results['alpha_corrected']:.6f}\n\n")
+            
+            methods = comparison_results['methods']
+            p_values = comparison_results['p_values']
+            
+            for i in range(len(methods)):
+                for j in range(i + 1, len(methods)):
+                    p_val = p_values[i, j]
+                    sig = comparison_results['significant'][i, j]
+                    f.write(f"{methods[i]} vs {methods[j]}: p={p_val:.4f} {'SIGNIFICANT' if sig else 'NOT SIGNIFICANT'}\n")
+    
+    logger.info(f"Statistical analysis saved to {stats_file}")
+    print(f"\nStatistical analysis saved to: {stats_file}")
+    
+    # 4. Save to CSV
+    csv_path = output_dir / f"wilcoxon_statistical_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    with open(csv_path, 'w') as f:
+        f.write("Comparison_Type,Method1,Method2,P_Value,Significant,Sample_Size\n")
+        
+        # Initial vs Feedback
+        for problem, stats in initial_feedback_stats.items():
+            sig = "Yes" if stats['significant'] else "No"
+            f.write(f"Initial_vs_Feedback,Initial,Feedback,{stats['p_value']:.6f},{sig},paired\n")
+        
+        # Method comparisons
+        if len(method_data) > 1:
+            comparison_results = pairwise_wilcoxon_comparison(method_data)
+            methods = comparison_results['methods']
+            p_values = comparison_results['p_values']
+            significant = comparison_results['significant']
+            
+            for i in range(len(methods)):
+                for j in range(i + 1, len(methods)):
+                    p_val = p_values[i, j]
+                    sig = "Yes" if significant[i, j] else "No"
+                    
+                    if not np.isnan(p_val):
+                        f.write(f"Method_Comparison,{methods[i]},{methods[j]},{p_val:.6f},{sig},{len(method_data[methods[i]])}\n")
+    
+    logger.info(f"Statistical results CSV saved to {csv_path}")
+    print(f"Statistical results CSV saved to: {csv_path}")
 
 def run_classification_benchmark():
 
@@ -374,22 +497,18 @@ def run_classification_benchmark():
     # 3. Outputs & Visualization
     # -----------------------------------------------------------------------------
     if all_results:
-        # Save JSON
         with open(output_dir / f"classification_results_{timestamp}.json", 'w') as f:
             json.dump(all_results, f, indent=4, default=str)
         logger.info(f"Results saved to JSON")
         
-        # Save CSV
         df = pd.DataFrame(all_results)
         csv_path = output_dir / "classification_summary.csv"
         df.to_csv(csv_path, index=False)
         logger.info(f"Summary CSV saved")
         
-        # Console Table
         print("\n" + "="*60)
         print("TITANIC BENCHMARK SUMMARY (Aggregated)")
         print("="*60)
-        # Group by Method and Loop Stage to see improvement
         summary = df.groupby(['Method', 'Loop_Stage'])[['Accuracy', 'F1_Score', 'AUC', 'Time']].mean().round(4)
         print(summary)
         
@@ -416,28 +535,42 @@ def run_classification_benchmark():
             plot_feedback_progress(df, plots_dir)
         except Exception as e: logger.error(f"Feedback plot error: {e}")
 
-        # 3. Convergence Plots (Loss History)
+        # 3. Convergence Plots with Confidence Bands
         try:
-            # We plot the first session's convergence for visual confirmation
             if convergence_plots_data:
-                # Pick one representative
-                key = list(convergence_plots_data.keys())[0] 
-                history = convergence_plots_data[key]
+                convergence_by_method = {}
+                for key, history in convergence_plots_data.items():
+                    parts = key.split('_')
+                    method_name = parts[-1] if len(parts) > 0 else "Unknown"
+                    
+                    if method_name not in convergence_by_method:
+                        convergence_by_method[method_name] = []
+                    convergence_by_method[method_name].append(history)
                 
-                # In MLP, history is often Loss (decreasing). In Perceptron, it might be Accuracy (increasing).
-                # We check the first/last values to guess.
-                ylabel = "Metric Value"
-                if history[0] > history[-1]: ylabel = "Training Loss"
-                else: ylabel = "Training Accuracy"
-
-                plot_convergence(
-                    history,
-                    title=f"Convergence: {key}",
-                    ylabel=ylabel,
-                    save_path=str(plots_dir / f"convergence_titanic_{timestamp}.png"),
+                print(f"Convergence histories organized by method: {list(convergence_by_method.keys())}")
+                
+                plot_convergence_with_bands(
+                    convergence_by_method,
+                    title="Classification - Mean Convergence with 95% Confidence Bands",
+                    xlabel="Epoch",
+                    ylabel="Training Loss/Metric",
+                    confidence=0.95,
+                    save_path=str(plots_dir / f"classification_convergence_bands_{timestamp}.png"),
                     show=False
                 )
-        except Exception as e: logger.error(f"Convergence plot error: {e}")
+            else:
+                print(f"WARNING: convergence_plots_data is empty - no convergence history captured during training")
+                logger.warning("No convergence history was captured during training")
+        except Exception as e: 
+            logger.error(f"Convergence with bands plot error: {e}")
+            import traceback
+            print(f"ERROR: Convergence plot failed: {e}")
+            traceback.print_exc()
+        
+        try:
+            perform_statistical_analysis(df, output_dir, logger)
+        except Exception as e: 
+            logger.error(f"Statistical analysis error: {e}")
 
     logger.info("BENCHMARK COMPLETE")
 

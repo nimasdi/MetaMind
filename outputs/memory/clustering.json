@@ -1,0 +1,325 @@
+[
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.7,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 750,
+            "topology": "rectangular"
+        },
+        "score": 0.325776365283128,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:52:59.900731"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.7,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 0.5,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "score": 0.34949218234673796,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:53:40.388362"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.3,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "score": 0.3206046954359372,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:54:10.406683"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 3.0,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "score": 0.3331075906632268,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:54:48.338829"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.3,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.0,
+            "max_epochs": 1500,
+            "topology": "rectangular"
+        },
+        "score": 0.3473897685087725,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:55:29.357597"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.9,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 3.0,
+            "max_epochs": 1000,
+            "topology": "hexagonal"
+        },
+        "score": 0.40847231966935227,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:56:02.937547"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                3,
+                4
+            ],
+            "learning_rate_initial": 0.7,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 3.0,
+            "max_epochs": 1200,
+            "topology": "hexagonal"
+        },
+        "score": 0.2691172796805033,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:56:51.776898"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.7,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 3.0,
+            "max_epochs": 1200,
+            "topology": "rectangular"
+        },
+        "score": 0.20688574700938836,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:57:49.201301"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.3,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 3.0,
+            "max_epochs": 1500,
+            "topology": "hexagonal"
+        },
+        "score": 0.21184710626531417,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T19:58:57.229909"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 1.5,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "score": 0.3614593442878174,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:16:38.846923"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.7,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 2.5,
+            "max_epochs": 1500,
+            "topology": "hexagonal"
+        },
+        "score": 0.3246857544649968,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:17:19.814914"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                3,
+                3
+            ],
+            "learning_rate_initial": 0.7,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 1500,
+            "topology": "hexagonal"
+        },
+        "score": 0.36351789404779755,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:17:55.061333"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.6,
+            "max_epochs": 2000,
+            "neighborhood_initial": 3.0,
+            "topology": "rectangular"
+        },
+        "score": 0.3260969693240381,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:18:39.153058"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.005,
+            "neighborhood_initial": 2.5,
+            "max_epochs": 750,
+            "topology": "rectangular"
+        },
+        "score": 0.3355102216341288,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:19:12.468327"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 750,
+            "topology": "hexagonal"
+        },
+        "score": 0.33576819011265685,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:19:54.025307"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.3,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 5.0,
+            "max_epochs": 1500,
+            "topology": "hexagonal"
+        },
+        "score": 0.2091449383858083,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:20:53.747395"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                5,
+                5
+            ],
+            "learning_rate_initial": 0.3,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 1.0,
+            "max_epochs": 1500,
+            "topology": "hexagonal"
+        },
+        "score": 0.21079242857810804,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:22:12.131345"
+    },
+    {
+        "problem_name": null,
+        "method": "SOM",
+        "parameters": {
+            "map_size": [
+                3,
+                4
+            ],
+            "learning_rate_initial": 0.6,
+            "learning_rate_final": 0.01,
+            "neighborhood_initial": 2.0,
+            "max_epochs": 2000,
+            "topology": "rectangular"
+        },
+        "score": 0.2649953874883405,
+        "metric_name": "Silhouette",
+        "timestamp": "2026-02-06T20:23:36.782776"
+    }
+]

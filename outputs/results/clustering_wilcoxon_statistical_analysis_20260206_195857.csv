@@ -1,0 +1,4 @@
+Comparison_Type,Problem,Method1,Method2,P_Value,Significant,Sample_Size
+Initial_vs_Feedback,Iris Clustering,Initial,Feedback,0.250000,No,paired
+Initial_vs_Feedback,Mall Customer Segmentation,Initial,Feedback,0.500000,No,paired
+Initial_vs_Feedback,Synthetic Clustering (5 clusters),Initial,Feedback,0.250000,No,paired

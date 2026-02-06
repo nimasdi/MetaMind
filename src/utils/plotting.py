@@ -89,6 +89,79 @@ def plot_multiple_convergence(convergence_data: Dict[str, List[float]],
         plt.close()
 
 
+def plot_convergence_with_bands(convergence_histories: Dict[str, List[List[float]]],
+                                title: str = "Convergence with Confidence Bands",
+                                xlabel: str = "Iteration",
+                                ylabel: str = "Fitness",
+                                confidence: float = 0.95,
+                                save_path: Optional[str] = None,
+                                show: bool = True):
+
+    plt.figure(figsize=(12, 7))
+    
+    colors = ['#2E86AB', '#A23B72', '#F18F01', '#C73E1D', '#6A994E']
+    
+    for i, (name, histories) in enumerate(convergence_histories.items()):
+        # Compute mean and std at each iteration
+        max_iters = max(len(h) for h in histories)
+        means = []
+        stds = []
+        
+        for iter_idx in range(max_iters):
+            values = [h[iter_idx] for h in histories if iter_idx < len(h)]
+            if values:
+                means.append(np.mean(values))
+                stds.append(np.std(values))
+            else:
+                means.append(np.nan)
+                stds.append(0)
+        
+        means = np.array(means)
+        stds = np.array(stds)
+        iterations = np.arange(len(means))
+        
+        color = colors[i % len(colors)]
+        
+        # Compute confidence interval bounds
+        if confidence > 0:
+            # Use confidence interval (approximately 1.96 * std for 95%)
+            z_score = 1.96 if confidence == 0.95 else 2.576 if confidence == 0.99 else 1.0
+            bounds = z_score * stds
+            label_text = f"{name} (95% CI)"
+        else:
+            # Use standard deviation
+            bounds = stds
+            label_text = f"{name} (±std)"
+        
+        # Plot mean line
+        plt.plot(iterations, means, linewidth=2.5, color=color, label=label_text, zorder=3)
+        
+        # Plot confidence band
+        plt.fill_between(iterations, 
+                         means - bounds, 
+                         means + bounds,
+                         alpha=0.2, 
+                         color=color, 
+                         zorder=1)
+    
+    plt.xlabel(xlabel, fontsize=12)
+    plt.ylabel(ylabel, fontsize=12)
+    plt.title(title, fontsize=14, fontweight='bold')
+    plt.legend(fontsize=10, loc='best')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    
+    if save_path:
+        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Plot saved to: {save_path}")
+    
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
+
 def plot_comparison_table(results: List[Dict[str, Any]],
                           save_path: Optional[str] = None):
     """

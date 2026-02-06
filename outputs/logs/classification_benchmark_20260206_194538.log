@@ -1,0 +1,11 @@
+2026-02-06 19:45:38 - classification_benchmark - INFO - ================================================================================
+2026-02-06 19:45:38 - classification_benchmark - INFO - TITANIC CLASSIFICATION BENCHMARK STARTED (Agent Loop Enabled)
+2026-02-06 19:45:38 - classification_benchmark - INFO - ================================================================================
+2026-02-06 19:45:38 - classification_benchmark - INFO - Loading data from /Users/nimasaeidi/Desktop/CI_proj/MetaMind/data/titanic_dataset...
+2026-02-06 19:45:38 - classification_benchmark - INFO - Data Split: Train=623, Val=134, Test=134
+2026-02-06 19:47:50 - classification_benchmark - INFO - Results saved to JSON
+2026-02-06 19:47:50 - classification_benchmark - INFO - Summary CSV saved
+2026-02-06 19:47:50 - classification_benchmark - ERROR - Convergence with bands plot error: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (6,) + inhomogeneous part.
+2026-02-06 19:47:50 - classification_benchmark - INFO - Statistical analysis saved to /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/results/wilcoxon_statistical_analysis.txt
+2026-02-06 19:47:50 - classification_benchmark - INFO - Statistical results CSV saved to /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/results/wilcoxon_statistical_analysis_20260206_194750.csv
+2026-02-06 19:47:50 - classification_benchmark - INFO - BENCHMARK COMPLETE

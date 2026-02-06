@@ -1,0 +1,35 @@
+2026-02-06 20:33:10 - tsp_benchmark - INFO - ====================================================================================================
+2026-02-06 20:33:10 - tsp_benchmark - INFO - TSP BENCHMARK EXPERIMENT
+2026-02-06 20:33:10 - tsp_benchmark - INFO - ====================================================================================================
+2026-02-06 20:33:10 - tsp_benchmark - INFO - Start Time: 2026-02-06 20:33:10
+2026-02-06 20:33:10 - tsp_benchmark - INFO - MetaMind Agent initialized with model: meta-llama/Meta-Llama-3.1-70B-Instruct
+2026-02-06 20:33:10 - tsp_benchmark - INFO - Loading TSPLIB instances...
+2026-02-06 20:33:10 - tsp_benchmark - INFO -   ✓ Loaded eil51: 51 cities, optimal=426
+2026-02-06 20:33:10 - tsp_benchmark - INFO -   ✓ Loaded berlin52: 52 cities, optimal=7542
+2026-02-06 20:33:10 - tsp_benchmark - INFO -   ✓ Loaded kroA100: 100 cities, optimal=21282
+2026-02-06 20:33:10 - tsp_benchmark - INFO - 
+Generating random instances...
+2026-02-06 20:33:10 - tsp_benchmark - INFO -   Generating random_30 and computing exact optimal solution...
+2026-02-06 20:38:10 - tsp_benchmark - INFO -   ✓ Generated random_30: 30 cities, optimal=5107.01
+2026-02-06 20:38:10 - tsp_benchmark - INFO -   Generating random_50 and computing LKH estimation...
+2026-02-06 20:38:15 - tsp_benchmark - INFO -   ✓ Generated random_50: 50 cities, LKH estimate=5713.09
+2026-02-06 21:22:37 - tsp_benchmark - INFO - 
+====================================================================================================
+2026-02-06 21:22:37 - tsp_benchmark - INFO - STATISTICAL ANALYSIS: WILCOXON PAIRWISE COMPARISONS
+2026-02-06 21:22:37 - tsp_benchmark - INFO - ====================================================================================================
+2026-02-06 21:22:37 - tsp_benchmark - INFO - 
+Statistical results saved to: /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/results/statistical_analysis_20260206_212237.csv
+2026-02-06 21:22:37 - tsp_benchmark - INFO - 
+Generating visualizations...
+2026-02-06 21:22:41 - tsp_benchmark - INFO - ====================================================================================================
+2026-02-06 21:22:41 - tsp_benchmark - INFO - LLM AGENT STATISTICS
+2026-02-06 21:22:41 - tsp_benchmark - INFO - ====================================================================================================
+2026-02-06 21:22:41 - tsp_benchmark - INFO - Total LLM Calls: 5
+2026-02-06 21:22:41 - tsp_benchmark - INFO - Model: meta-llama/Meta-Llama-3.1-70B-Instruct
+2026-02-06 21:22:41 - tsp_benchmark - INFO - Temperature: 0.3
+2026-02-06 21:22:41 - tsp_benchmark - INFO - ====================================================================================================
+2026-02-06 21:22:41 - tsp_benchmark - INFO - EXPERIMENT COMPLETED
+2026-02-06 21:22:41 - tsp_benchmark - INFO - End Time: 2026-02-06 21:22:41
+2026-02-06 21:22:41 - tsp_benchmark - INFO - Total Problems: 5
+2026-02-06 21:22:41 - tsp_benchmark - INFO - Total Experiments: 5
+2026-02-06 21:22:41 - tsp_benchmark - INFO - ====================================================================================================

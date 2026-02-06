@@ -1,0 +1,10 @@
+2026-02-06 20:11:08 - classification_benchmark - INFO - ================================================================================
+2026-02-06 20:11:08 - classification_benchmark - INFO - TITANIC CLASSIFICATION BENCHMARK STARTED (Agent Loop Enabled)
+2026-02-06 20:11:08 - classification_benchmark - INFO - ================================================================================
+2026-02-06 20:11:08 - classification_benchmark - INFO - Loading data from /Users/nimasaeidi/Desktop/CI_proj/MetaMind/data/titanic_dataset...
+2026-02-06 20:11:08 - classification_benchmark - INFO - Data Split: Train=623, Val=134, Test=134
+2026-02-06 20:13:36 - classification_benchmark - INFO - Results saved to JSON
+2026-02-06 20:13:36 - classification_benchmark - INFO - Summary CSV saved
+2026-02-06 20:13:36 - classification_benchmark - INFO - Statistical analysis saved to /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/results/wilcoxon_statistical_analysis.txt
+2026-02-06 20:13:36 - classification_benchmark - INFO - Statistical results CSV saved to /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/results/wilcoxon_statistical_analysis_20260206_201336.csv
+2026-02-06 20:13:36 - classification_benchmark - INFO - BENCHMARK COMPLETE

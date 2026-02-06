@@ -26,7 +26,8 @@ from src.orchestrator.agent import MetaMindAgent
 
 # Import Utilities
 from src.utils.logging import get_experiment_logger, standard_progress_callback
-from src.utils.plotting import plot_box_comparison, plot_convergence
+from src.utils.plotting import plot_box_comparison, plot_convergence, plot_convergence_with_bands
+from src.utils.metrics import pairwise_wilcoxon_comparison, print_wilcoxon_summary
 
 # Import Methods
 from src.methods.neural.som import SOM
@@ -160,6 +161,133 @@ def plot_feedback_progress(df, plots_dir):
     plt.savefig(path)
     plt.close()
     print(f"Feedback progress plot saved to {path}")
+
+def perform_statistical_analysis(df, output_dir, logger):
+    print("\n1. WILCOXON SIGNED-RANK TEST: Initial vs Feedback (Per Problem)")
+    print("-" * 80)
+    
+    initial_feedback_stats = {}
+    
+    for problem in df['Problem'].unique():
+        problem_df = df[df['Problem'] == problem]
+        initial_scores = problem_df[problem_df['Loop_Stage'] == 'Initial']['Silhouette'].values
+        feedback_scores = problem_df[problem_df['Loop_Stage'] == 'Feedback']['Silhouette'].values
+        
+        # Only compare if both initial and feedback exist
+        if len(initial_scores) > 0 and len(feedback_scores) > 0:
+            min_len = min(len(initial_scores), len(feedback_scores))
+            initial_scores = initial_scores[:min_len]
+            feedback_scores = feedback_scores[:min_len]
+            
+            try:
+                from scipy.stats import wilcoxon
+                stat, p_value = wilcoxon(initial_scores, feedback_scores)
+                
+                initial_feedback_stats[problem] = {
+                    'initial_mean': np.mean(initial_scores),
+                    'feedback_mean': np.mean(feedback_scores),
+                    'p_value': p_value,
+                    'significant': p_value < 0.05
+                }
+                
+                sig_marker = "***" if p_value < 0.05 else "ns"
+                print(f"{problem:20} | Initial: {np.mean(initial_scores):.4f} -> Feedback: {np.mean(feedback_scores):.4f} | p={p_value:.4f} {sig_marker}")
+            except Exception as e:
+                logger.error(f"Wilcoxon test error for {problem}: {e}")
+    
+    # 2. Test between different methods for each problem
+    print("\n2. PAIRWISE WILCOXON TEST: Method Comparison (Per Problem)")
+    print("-" * 80)
+    
+    for problem in df['Problem'].unique():
+        problem_df = df[df['Problem'] == problem]
+        
+        if len(problem_df['Method'].unique()) > 1:
+            method_data = {}
+            for method in problem_df['Method'].unique():
+                method_scores = problem_df[problem_df['Method'] == method]['Silhouette'].values
+                if len(method_scores) > 0:
+                    method_data[method] = method_scores.tolist()
+            
+            if len(method_data) > 1:
+                print(f"\n{problem}:")
+                comparison_results = pairwise_wilcoxon_comparison(method_data)
+                
+                # Print pairwise comparisons
+                methods = comparison_results['methods']
+                p_values = comparison_results['p_values']
+                
+                for i in range(len(methods)):
+                    for j in range(i + 1, len(methods)):
+                        p_val = p_values[i, j]
+                        sig = "***" if (not np.isnan(p_val) and p_val < comparison_results['alpha_corrected']) else "ns"
+                        print(f"  {methods[i]:15} vs {methods[j]:15} | p={p_val:.4f} {sig}")
+    
+    # 3. Overall test across all methods
+    print("\n3. OVERALL METHOD COMPARISON: All Methods across All Problems")
+    print("-" * 80)
+    
+    all_method_data = {}
+    for method in df['Method'].unique():
+        method_scores = df[df['Method'] == method]['Silhouette'].values
+        if len(method_scores) > 0:
+            all_method_data[method] = method_scores.tolist()
+    
+    if len(all_method_data) > 1:
+        comparison_results = pairwise_wilcoxon_comparison(all_method_data)
+        print_wilcoxon_summary(comparison_results, "Method Performance Comparison")
+
+    
+    # 4. Save statistical results to CSV
+    csv_path = output_dir / f"wilcoxon_statistical_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    with open(csv_path, 'w') as f:
+        f.write("Comparison_Type,Problem,Method1,Method2,P_Value,Significant,Sample_Size\n")
+        
+        for problem, stats in initial_feedback_stats.items():
+            sig = "Yes" if stats['significant'] else "No"
+            f.write(f"Initial_vs_Feedback,{problem},Initial,Feedback,{stats['p_value']:.6f},{sig},paired\n")
+        
+        for problem in df['Problem'].unique():
+            problem_df = df[df['Problem'] == problem]
+            
+            if len(problem_df['Method'].unique()) > 1:
+                method_data = {}
+                for method in problem_df['Method'].unique():
+                    method_scores = problem_df[problem_df['Method'] == method]['Silhouette'].values
+                    if len(method_scores) > 0:
+                        method_data[method] = method_scores.tolist()
+                
+                if len(method_data) > 1:
+                    comparison_results = pairwise_wilcoxon_comparison(method_data)
+                    methods = comparison_results['methods']
+                    p_values = comparison_results['p_values']
+                    significant = comparison_results['significant']
+                    
+                    for i in range(len(methods)):
+                        for j in range(i + 1, len(methods)):
+                            p_val = p_values[i, j]
+                            sig = "Yes" if significant[i, j] else "No"
+                            
+                            if not np.isnan(p_val):
+                                f.write(f"Method_Comparison,{problem},{methods[i]},{methods[j]},{p_val:.6f},{sig},{len(method_data[methods[i]])}\n")
+        
+        # Overall method comparison
+        if len(all_method_data) > 1:
+            comparison_results = pairwise_wilcoxon_comparison(all_method_data)
+            methods = comparison_results['methods']
+            p_values = comparison_results['p_values']
+            significant = comparison_results['significant']
+            
+            for i in range(len(methods)):
+                for j in range(i + 1, len(methods)):
+                    p_val = p_values[i, j]
+                    sig = "Yes" if significant[i, j] else "No"
+                    
+                    if not np.isnan(p_val):
+                        f.write(f"Overall_Method_Comparison,All_Problems,{methods[i]},{methods[j]},{p_val:.6f},{sig},{len(all_method_data[methods[i]])}\n")
+    
+    logger.info(f"Statistical results CSV saved to {csv_path}")
+    print(f"Statistical results CSV saved to: {csv_path}")
 
 def run_clustering_benchmark():
     # Setup Output
@@ -388,22 +516,41 @@ def run_clustering_benchmark():
             plot_feedback_progress(df, plots_dir)
         except Exception as e: logger.error(f"Feedback plot error: {e}")
 
-        # 3. Convergence Plots (Using Utility)
+        # 3. Convergence Plots with Confidence Bands (Using Utility)
         try:
-            # Plot one representative convergence curve per problem
+            print(f"\nAttempting convergence plots... (convergence_plots_data has {len(convergence_plots_data)} entries)")
+            # Plot convergence with bands for each problem
             for prob in [p.problem_name for p in problems]:
-                # Find a key matching this problem
-                keys = [k for k in convergence_plots_data.keys() if prob in k and "Initial" in k]
+                # Collect all convergence histories for this problem
+                keys = [k for k in convergence_plots_data.keys() if prob in k]
+                print(f"  Problem '{prob}': found {len(keys)} convergence histories")
                 if keys:
-                    history = convergence_plots_data[keys[0]]
-                    plot_convergence(
-                        history,
-                        title=f"Convergence: {prob}",
-                        ylabel="Quantization Error / Fitness",
-                        save_path=str(plots_dir / f"convergence_{prob.replace(' ', '_')}.png"),
-                        show=False
-                    )
-        except Exception as e: logger.error(f"Convergence plot error: {e}")
+                    convergence_data = {k: convergence_plots_data[k] for k in keys}
+                    if convergence_data:
+                        # Group by problem name for the visualization
+                        plot_convergence_with_bands(
+                            {prob: [convergence_plots_data[k] for k in keys]},
+                            title=f"Convergence: {prob} (all sessions with 95% CI)",
+                            ylabel="Quantization Error / Fitness",
+                            confidence=0.95,
+                            save_path=str(plots_dir / f"convergence_bands_{prob.replace(' ', '_')}.png"),
+                            show=False
+                        )
+                        print(f"  Convergence plot saved for {prob}")
+            if not convergence_plots_data:
+                print("WARNING: convergence_plots_data is empty - no convergence history captured during training")
+                logger.warning("No convergence history was captured during training")
+        except Exception as e: 
+            logger.error(f"Convergence plot error: {e}")
+            import traceback
+            print(f"ERROR: Convergence plot failed: {e}")
+            traceback.print_exc()
+        
+        # 4. Statistical Analysis - Wilcoxon Tests
+        try:
+            perform_statistical_analysis(df, output_dir, logger)
+        except Exception as e: 
+            logger.error(f"Statistical analysis error: {e}")
 
     logger.info("BENCHMARK COMPLETE")
 

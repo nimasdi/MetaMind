@@ -83,3 +83,106 @@ def success_rate(values: List[float], threshold: float) -> float:
     
     successes = sum(1 for v in values if v <= threshold)
     return (successes / len(values)) * 100
+
+
+def pairwise_wilcoxon_comparison(data_dict: Dict[str, List[float]]) -> Dict[str, Any]:
+    methods = list(data_dict.keys())
+    n_methods = len(methods)
+    
+    # Initialize matrices for p-values and significance
+    p_values = np.zeros((n_methods, n_methods))
+    significant = np.zeros((n_methods, n_methods), dtype=bool)
+    effect_sizes = np.zeros((n_methods, n_methods))
+    
+    # Bonferroni correction
+    alpha = 0.05
+    n_comparisons = n_methods * (n_methods - 1) / 2
+    alpha_corrected = alpha / n_comparisons
+    
+    for i in range(n_methods):
+        for j in range(n_methods):
+            if i == j:
+                p_values[i, j] = 1.0
+                effect_sizes[i, j] = 0.0
+                significant[i, j] = False
+            elif i < j:
+                sample1 = np.array(data_dict[methods[i]])
+                sample2 = np.array(data_dict[methods[j]])
+                
+                # Handle different lengths by truncating to smaller length
+                min_len = min(len(sample1), len(sample2))
+                if min_len > 0:
+                    sample1 = sample1[:min_len]
+                    sample2 = sample2[:min_len]
+                    
+                    try:
+                        statistic, p_value = stats.wilcoxon(sample1, sample2)
+                        p_values[i, j] = float(p_value)
+                        p_values[j, i] = float(p_value)
+                        
+                        # Bonferroni-corrected significance
+                        significant[i, j] = p_value < alpha_corrected
+                        significant[j, i] = p_value < alpha_corrected
+                        
+                        # Compute effect size (rank-biserial correlation)
+                        n = len(sample1)
+                        r = 1 - (2 * statistic) / (n * (n + 1))
+                        effect_sizes[i, j] = abs(r)
+                        effect_sizes[j, i] = abs(r)
+                    except Exception:
+                        p_values[i, j] = np.nan
+                        p_values[j, i] = np.nan
+                        effect_sizes[i, j] = np.nan
+                        effect_sizes[j, i] = np.nan
+    
+    return {
+        'p_values': p_values,
+        'significant': significant,
+        'effect_sizes': effect_sizes,
+        'methods': methods,
+        'alpha': alpha,
+        'alpha_corrected': alpha_corrected,
+        'n_comparisons': n_comparisons
+    }
+
+
+def format_wilcoxon_table(comparison_results: Dict[str, Any]) -> str:
+    methods = comparison_results['methods']
+    p_values = comparison_results['p_values']
+    significant = comparison_results['significant']
+    
+    header = "Method 1 vs Method 2".ljust(30) + "P-Value".ljust(12) + "Significant*"
+    lines = [header, "-" * 60]
+    
+    # Body - only unique pairs
+    for i in range(len(methods)):
+        for j in range(i + 1, len(methods)):
+            p_val = p_values[i, j]
+            sig = significant[i, j]
+            
+            comparison_str = f"{methods[i]} vs {methods[j]}".ljust(30)
+            if np.isnan(p_val):
+                p_val_str = "N/A".ljust(12)
+            else:
+                p_val_str = f"{p_val:.4f}".ljust(12)
+            
+            sig_str = "***" if sig else "ns"
+            lines.append(comparison_str + p_val_str + sig_str)
+    
+    lines.append("-" * 60)
+    lines.append("* Asterisks (***) indicate significant difference (Bonferroni-corrected)")
+    lines.append(f"  Significance level: alpha={comparison_results['alpha_corrected']:.6f} (corrected)")
+    
+    return "\n".join(lines)
+
+
+def print_wilcoxon_summary(comparison_results: Dict[str, Any], title: str = "Statistical Comparison"):
+    print("\n" + "="*70)
+    print(f"{title.center(70)}")
+    print("="*70)
+    print(f"Number of comparisons: {int(comparison_results['n_comparisons'])}")
+    print(f"Original alpha: {comparison_results['alpha']}")
+    print(f"Bonferroni-corrected alpha: {comparison_results['alpha_corrected']:.6f}")
+    print()
+    print(format_wilcoxon_table(comparison_results))
+    print("="*70 + "\n")

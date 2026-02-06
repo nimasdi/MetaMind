@@ -1,0 +1,8 @@
+2026-02-06 20:15:49 - clustering_benchmark - INFO - ================================================================================
+2026-02-06 20:15:49 - clustering_benchmark - INFO - CLUSTERING BENCHMARK STARTED
+2026-02-06 20:15:49 - clustering_benchmark - INFO - ================================================================================
+2026-02-06 20:15:49 - clustering_benchmark - INFO - BENCHMARKING PROBLEM: Iris Clustering
+2026-02-06 20:17:55 - clustering_benchmark - INFO - BENCHMARKING PROBLEM: Mall Customer Segmentation
+2026-02-06 20:19:54 - clustering_benchmark - INFO - BENCHMARKING PROBLEM: Synthetic Clustering (5 clusters)
+2026-02-06 20:23:37 - clustering_benchmark - INFO - Statistical results CSV saved to /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/results/wilcoxon_statistical_analysis_20260206_202337.csv
+2026-02-06 20:23:37 - clustering_benchmark - INFO - BENCHMARK COMPLETE

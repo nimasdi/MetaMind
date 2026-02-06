@@ -1,0 +1,9 @@
+2026-02-06 19:52:12 - clustering_benchmark - INFO - ================================================================================
+2026-02-06 19:52:12 - clustering_benchmark - INFO - CLUSTERING BENCHMARK STARTED
+2026-02-06 19:52:12 - clustering_benchmark - INFO - ================================================================================
+2026-02-06 19:52:12 - clustering_benchmark - INFO - BENCHMARKING PROBLEM: Iris Clustering
+2026-02-06 19:54:10 - clustering_benchmark - INFO - BENCHMARKING PROBLEM: Mall Customer Segmentation
+2026-02-06 19:56:02 - clustering_benchmark - INFO - BENCHMARKING PROBLEM: Synthetic Clustering (5 clusters)
+2026-02-06 19:58:57 - clustering_benchmark - ERROR - Convergence plot error: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (6,) + inhomogeneous part.
+2026-02-06 19:58:57 - clustering_benchmark - INFO - Statistical results CSV saved to /Users/nimasaeidi/Desktop/CI_proj/MetaMind/outputs/results/wilcoxon_statistical_analysis_20260206_195857.csv
+2026-02-06 19:58:57 - clustering_benchmark - INFO - BENCHMARK COMPLETE

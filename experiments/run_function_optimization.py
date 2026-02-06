@@ -15,12 +15,6 @@ env_path = Path(__file__).parent / ".env"
 load_dotenv(env_path)
 
 from src.problems.continuous import (
-    RastriginFunction,
-    AckleyFunction,
-    RosenbrockFunction,
-    SphereFunction,
-    SchwefelFunction,
-    GriewankFunction,
     create_benchmark_function
 )
 
@@ -29,8 +23,8 @@ from src.methods.evolutionary.ga import GeneticAlgorithm
 
 from src.orchestrator.agent import MetaMindAgent
 from src.utils.logging import setup_logger, get_experiment_logger, standard_progress_callback
-from src.utils.metrics import compute_statistics, compute_gap_percentage
-from src.utils.plotting import plot_convergence, plot_multiple_convergence, plot_box_comparison
+from src.utils.metrics import compute_statistics, compute_gap_percentage, pairwise_wilcoxon_comparison, print_wilcoxon_summary
+from src.utils.plotting import plot_convergence, plot_multiple_convergence, plot_box_comparison, plot_convergence_with_bands
 
 from src.orchestrator.memory import MemoryManager
 
@@ -213,8 +207,6 @@ def run_agent_optimization(agent, problem, memory_manager, n_runs=10, enable_fee
     }
 
     recommendation = get_llm_recommendation(agent, problem, memory_manager)
-    
-    recommendation = get_llm_recommendation(agent, problem)
     if recommendation is None:
         print("ERROR: Failed to get recommendation. Skipping this problem.")
         return None
@@ -247,11 +239,44 @@ def run_agent_optimization(agent, problem, memory_manager, n_runs=10, enable_fee
     )
     all_iterations.append(iteration_summary)
     print_iteration_summary(iteration_summary, n_runs)
+    
+    # Plot convergence for initial iteration
+    try:
+        figures_dir = project_root / "outputs" / "figures"
+        figures_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_name = problem.problem_name.replace(' ', '_').replace('-', '_')
+        
+        # Plot best run convergence
+        plot_convergence(
+            iteration_summary['best_run']['convergence_history'],
+            title=f"{problem.problem_name} - Iteration 0 - Best Run Convergence",
+            xlabel="Iteration",
+            ylabel="Fitness Value",
+            save_path=str(figures_dir / f"{safe_name}_iter0_convergence_{timestamp}.png"),
+            show=False
+        )
+        print(f"  ✓ Saved convergence plot: {safe_name}_iter0_convergence_{timestamp}.png")
+        
+        # Plot all runs for this iteration
+        iter_conv_data = {f"Run {r['run']}": r['convergence_history'] 
+                         for r in iteration_summary['all_runs']}
+        plot_multiple_convergence(
+            iter_conv_data,
+            title=f"{problem.problem_name} - Iteration 0 - All Runs",
+            xlabel="Iteration",
+            ylabel="Fitness Value",
+            save_path=str(figures_dir / f"{safe_name}_iter0_all_runs_{timestamp}.png"),
+            show=False
+        )
+        print(f"  ✓ Saved all-runs plot: {safe_name}_iter0_all_runs_{timestamp}.png")
+    except Exception as e:
+        print(f"  Warning: Could not generate iteration 0 convergence plots: {e}")
 
     best_fitness = iteration_summary['best_fitness']['min']
 
     memory_entry = {
-        "Problem": problem.problem_name,
+        "problem": problem.problem_name,
         "Method": recommendation.selected_method,
         "Parameters": recommendation.parameters,
         "Fitness": best_fitness, 
@@ -376,10 +401,43 @@ def run_agent_optimization(agent, problem, memory_manager, n_runs=10, enable_fee
             )
             all_iterations.append(feedback_summary)
             print_iteration_summary(feedback_summary, n_runs)
+            
+            # Plot convergence for feedback iteration
+            try:
+                figures_dir = project_root / "outputs" / "figures"
+                figures_dir.mkdir(parents=True, exist_ok=True)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                safe_name = problem.problem_name.replace(' ', '_').replace('-', '_')
+                
+                # Plot best run convergence
+                plot_convergence(
+                    feedback_summary['best_run']['convergence_history'],
+                    title=f"{problem.problem_name} - Iteration {feedback_iter} - Best Run Convergence",
+                    xlabel="Iteration",
+                    ylabel="Fitness Value",
+                    save_path=str(figures_dir / f"{safe_name}_iter{feedback_iter}_convergence_{timestamp}.png"),
+                    show=False
+                )
+                print(f"  ✓ Saved convergence plot: {safe_name}_iter{feedback_iter}_convergence_{timestamp}.png")
+                
+                # Plot all runs for this iteration
+                iter_conv_data = {f"Run {r['run']}": r['convergence_history'] 
+                                 for r in feedback_summary['all_runs']}
+                plot_multiple_convergence(
+                    iter_conv_data,
+                    title=f"{problem.problem_name} - Iteration {feedback_iter} - All Runs",
+                    xlabel="Iteration",
+                    ylabel="Fitness Value",
+                    save_path=str(figures_dir / f"{safe_name}_iter{feedback_iter}_all_runs_{timestamp}.png"),
+                    show=False
+                )
+                print(f"  ✓ Saved all-runs plot: {safe_name}_iter{feedback_iter}_all_runs_{timestamp}.png")
+            except Exception as e:
+                print(f"  Warning: Could not generate iteration {feedback_iter} convergence plots: {e}")
 
             fb_best_fitness = feedback_summary['best_fitness']['min']
             fb_entry = {
-                "Problem": problem.problem_name,
+                "problem": problem.problem_name,
                 "Method": feedback_recommendation.selected_method,
                 "Parameters": feedback_recommendation.parameters,
                 "Fitness": fb_best_fitness, 
@@ -541,6 +599,64 @@ def print_iteration_summary(summary, n_runs):
     print(f"Function Evaluations: {summary['function_evaluations']['mean']:.0f}")
     print(f"{'='*80}")
 
+def perform_statistical_analysis(all_results, output_dir):
+    """Perform Wilcoxon statistical comparisons between optimization methods."""
+    if len(all_results) < 2:
+        return
+    
+    print("\n" + "="*100)
+    print("STATISTICAL ANALYSIS: WILCOXON PAIRWISE COMPARISONS")
+    print("="*100)
+    
+    # Group results by problem and iteration
+    problems_methods = {}
+    
+    for result in all_results:
+        problem_name = result['problem_name']
+        best_iter = result['all_iterations'][result['best_iteration']]
+        
+        if problem_name not in problems_methods:
+            problems_methods[problem_name] = {}
+        
+        method_name = best_iter['method']
+        fitness_values = [r['best_fitness'] for r in best_iter['all_runs']]
+        problems_methods[problem_name][method_name] = fitness_values
+    
+    # Perform comparisons for each problem
+    statistical_results = {}
+    
+    for problem, methods_data in problems_methods.items():
+        if len(methods_data) < 2:
+            continue
+        
+        print(f"\nProblem: {problem}")
+        comparison_results = pairwise_wilcoxon_comparison(methods_data)
+        statistical_results[problem] = comparison_results
+        
+        print_wilcoxon_summary(comparison_results, title=f"Wilcoxon Test Results for {problem}")
+    
+    # Save statistical results to CSV
+    csv_path = output_dir / f"statistical_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    with open(csv_path, 'w') as f:
+        f.write("Problem,Method1,Method2,P_Value,Significant,Effect_Size\n")
+        
+        for problem, comp_results in statistical_results.items():
+            methods = comp_results['methods']
+            p_values = comp_results['p_values']
+            significant = comp_results['significant']
+            effect_sizes = comp_results['effect_sizes']
+            
+            for i in range(len(methods)):
+                for j in range(i + 1, len(methods)):
+                    p_val = p_values[i, j]
+                    sig = "Yes" if significant[i, j] else "No"
+                    eff = effect_sizes[i, j]
+                    
+                    if not np.isnan(p_val):
+                        f.write(f"{problem},{methods[i]},{methods[j]},{p_val:.6f},{sig},{eff:.4f}\n")
+    
+    print(f"\nStatistical results saved to: {csv_path}")
+
 
 def main():
     logger = get_experiment_logger("function_optimization", str(project_root / "outputs" / "logs"))
@@ -635,6 +751,9 @@ def main():
         
         print(f"\nResults saved to: {results_file}")
         
+        # Perform statistical analysis
+        perform_statistical_analysis(all_results, output_dir)
+        
         print("\nGenerating comparison plots...")
         try:
             figures_dir = project_root / "outputs" / "figures"
@@ -670,9 +789,42 @@ def main():
                     show=False
                 )
             
+            # Plot convergence with confidence bands for all runs (grouped by problem)
+            try:
+                # Group by problem name (without dimension)
+                problems_data = {}
+                for result in all_results:
+                    problem_base_name = result['function_name']  # e.g., "Rastrigin Function"
+                    
+                    if problem_base_name not in problems_data:
+                        problems_data[problem_base_name] = {}
+                    
+                    label = f"{result['dimension']}D"
+                    best_iter = result['all_iterations'][result['best_iteration']]
+                    all_convergence_histories = [r['convergence_history'] for r in best_iter['all_runs']]
+                    problems_data[problem_base_name][label] = all_convergence_histories
+                
+                # Create a plot for each problem showing all dimensions
+                for problem_name, dimensions_data in problems_data.items():
+                    if dimensions_data:
+                        safe_problem_name = problem_name.replace(' ', '_').lower()
+                        plot_convergence_with_bands(
+                            dimensions_data,
+                            title=f"{problem_name} - Convergence with 95% CI (All Dimensions)",
+                            xlabel="Iteration",
+                            ylabel="Fitness Value",
+                            confidence=0.95,
+                            save_path=str(figures_dir / f"{safe_problem_name}_convergence_bands_{timestamp}.png"),
+                            show=False
+                        )
+            except Exception as e:
+                print(f"Warning: Could not generate convergence bands plots: {e}")
+            
+            # Plot comparison of iterations for each problem
             if enable_feedback:
                 for result in all_results:
                     if result['total_iterations'] > 1:
+                        # Feedback loop progress (mean fitness across iterations)
                         iter_means = [iter_data['best_fitness']['mean'] 
                                      for iter_data in result['all_iterations']]
                         
@@ -691,6 +843,21 @@ def main():
                         plt.savefig(str(figures_dir / f"feedback_progress_{safe_name}_{timestamp}.png"), 
                                    dpi=300, bbox_inches='tight')
                         plt.close()
+                        
+                        # Compare best run convergence across all iterations
+                        iteration_convergence = {}
+                        for iter_data in result['all_iterations']:
+                            iter_num = iter_data['iteration']
+                            iteration_convergence[f"Iteration {iter_num}"] = iter_data['best_run']['convergence_history']
+                        
+                        plot_multiple_convergence(
+                            iteration_convergence,
+                            title=f"{result['problem_name']} - Best Run per Iteration",
+                            xlabel="Algorithm Iteration",
+                            ylabel="Fitness Value",
+                            save_path=str(figures_dir / f"{safe_name}_iterations_comparison_{timestamp}.png"),
+                            show=False
+                        )
             
             print(f"Plots saved to: {figures_dir}")
             

@@ -1,0 +1,67 @@
+[
+    {
+        "problem_name": null,
+        "method": "ACO",
+        "parameters": {
+            "n_ants": 100,
+            "alpha": 1.0,
+            "beta": 2.0,
+            "evaporation_rate": 0.1
+        },
+        "score": 429.4840806712555,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T20:45:36.940579"
+    },
+    {
+        "problem_name": null,
+        "method": "ACO",
+        "parameters": {
+            "n_ants": 100,
+            "alpha": 1.0,
+            "beta": 2.0,
+            "evaporation_rate": 0.1
+        },
+        "score": 7544.365901904087,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T20:53:18.704887"
+    },
+    {
+        "problem_name": null,
+        "method": "ACO",
+        "parameters": {
+            "n_ants": 100,
+            "alpha": 1.0,
+            "beta": 2.0,
+            "evaporation_rate": 0.1
+        },
+        "score": 21790.783471528834,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T21:13:07.257082"
+    },
+    {
+        "problem_name": null,
+        "method": "ACO",
+        "parameters": {
+            "n_ants": 50,
+            "alpha": 1.0,
+            "beta": 2.0,
+            "evaporation_rate": 0.1
+        },
+        "score": 4517.670007743343,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T21:14:46.878113"
+    },
+    {
+        "problem_name": null,
+        "method": "ACO",
+        "parameters": {
+            "n_ants": 100,
+            "alpha": 1.0,
+            "beta": 2.0,
+            "evaporation_rate": 0.1
+        },
+        "score": 5713.088702766458,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T21:22:37.190090"
+    }
+]

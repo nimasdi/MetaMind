@@ -155,7 +155,8 @@ class PSO(BaseMethod):
             'best_position': gbest_position.tolist() if gbest_position is not None else None,
             'best_solution': gbest_position.tolist() if gbest_position is not None else None,  # Alias for consistency
             'iterations_run': max_iter,
-            'elapsed_time': self.end_time - self.start_time
+            'elapsed_time': self.end_time - self.start_time,
+            'convergence_history': self.convergence_history
         }
         self.log(f"PSO optimization finished. Final best fitness: {gbest_value:.4e}")
         return self.results

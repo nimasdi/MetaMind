@@ -1,0 +1,1042 @@
+[
+    {
+        "problem_name": "Rastrigin-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.9949590570932969,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:36:29.879517"
+    },
+    {
+        "problem_name": "Rastrigin-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 2.9848771712798623,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:36:49.960216"
+    },
+    {
+        "problem_name": "Rastrigin-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.7,
+            "c1": 1.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.9949590570932969,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:37:11.284716"
+    },
+    {
+        "problem_name": "Ackley-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 50,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.1706219287255237e-06,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:37:28.300685"
+    },
+    {
+        "problem_name": "Ackley-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.4654943925052066e-14,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:37:44.056663"
+    },
+    {
+        "problem_name": "Ackley-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.0,
+            "c2": 1.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 2.886579864025407e-14,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:37:52.441581"
+    },
+    {
+        "problem_name": "Rosenbrock-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 50,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.3258168633359282,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:38:04.263735"
+    },
+    {
+        "problem_name": "Rosenbrock-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.9594261386544879,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:38:21.719436"
+    },
+    {
+        "problem_name": "Rosenbrock-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 2000,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.6430142497216169,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:38:36.141327"
+    },
+    {
+        "problem_name": "Sphere-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 50,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 3.29061119136916e-19,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:38:51.187077"
+    },
+    {
+        "problem_name": "Sphere-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 7.496969054327052e-46,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:39:04.835688"
+    },
+    {
+        "problem_name": "Sphere-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.1,
+            "c2": 1.1,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 3.7521035228039424e-48,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:39:11.647589"
+    },
+    {
+        "problem_name": "Rastrigin-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 14.940106144292912,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:39:26.469462"
+    },
+    {
+        "problem_name": "Rastrigin-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 20.895563119455886,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:39:52.958598"
+    },
+    {
+        "problem_name": "Rastrigin-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.2,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 7.959764985624133,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:40:19.575984"
+    },
+    {
+        "problem_name": "Ackley-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.6356240687634167,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:40:38.222268"
+    },
+    {
+        "problem_name": "Ackley-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.3
+        },
+        "score": 0.0004804943265139805,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:41:03.940443"
+    },
+    {
+        "problem_name": "Ackley-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.2
+        },
+        "score": 0.0004159528675171664,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:41:32.661777"
+    },
+    {
+        "problem_name": "Rosenbrock-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 7.844646782064648,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:41:51.646065"
+    },
+    {
+        "problem_name": "Rosenbrock-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.5,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.3
+        },
+        "score": 16.108137955088317,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:42:17.971120"
+    },
+    {
+        "problem_name": "Rosenbrock-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.4,
+            "c1": 2.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.2
+        },
+        "score": 16.119680133165023,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:42:46.717377"
+    },
+    {
+        "problem_name": "Sphere-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.9808823088823997e-05,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:43:02.900746"
+    },
+    {
+        "problem_name": "Sphere-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 5.569273199967601e-08,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:43:21.822660"
+    },
+    {
+        "problem_name": "Sphere-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1000,
+            "w": 0.55,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.2753447506747741e-05,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:43:35.146910"
+    },
+    {
+        "problem_name": "Rastrigin-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 2.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 12.930281646021683,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:43:52.227170"
+    },
+    {
+        "problem_name": "Rastrigin-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.5,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.7
+        },
+        "score": 45.17495589622976,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:44:20.228143"
+    },
+    {
+        "problem_name": "Rastrigin-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.3
+        },
+        "score": 23.313293870270513,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:44:51.948199"
+    },
+    {
+        "problem_name": "Ackley-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.9826897037464524,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:45:10.547141"
+    },
+    {
+        "problem_name": "Ackley-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.3
+        },
+        "score": 0.24484556091858822,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:45:40.759304"
+    },
+    {
+        "problem_name": "Ackley-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.5,
+            "c1": 1.2,
+            "c2": 1.8,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.221331316505403,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:46:15.290750"
+    },
+    {
+        "problem_name": "Rosenbrock-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 114.06207653723519,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:46:33.204630"
+    },
+    {
+        "problem_name": "Rosenbrock-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 57.28083060512337,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:47:01.294087"
+    },
+    {
+        "problem_name": "Rosenbrock-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.0,
+            "c2": 1.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 121.36812010907357,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:47:35.201390"
+    },
+    {
+        "problem_name": "Sphere-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.028601437654971862,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:47:53.884204"
+    },
+    {
+        "problem_name": "Sphere-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.0036441465523018163,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:48:19.734442"
+    },
+    {
+        "problem_name": "Sphere-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.001369527113255461,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T18:48:51.229996"
+    },
+    {
+        "problem_name": "Rastrigin-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 2.9848771712798623,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:21:48.234267"
+    },
+    {
+        "problem_name": "Rastrigin-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 2.9848771712798623,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:22:17.963753"
+    },
+    {
+        "problem_name": "Ackley-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 3.8413716652030416e-13,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:22:39.604180"
+    },
+    {
+        "problem_name": "Ackley-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.0,
+            "c2": 1.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 7.549516567451064e-15,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:22:59.753571"
+    },
+    {
+        "problem_name": "Ackley-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.6,
+            "c1": 1.2,
+            "c2": 1.8,
+            "w_decay": true,
+            "velocity_clamp": 0.7
+        },
+        "score": 1.646223633103109,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:23:15.057986"
+    },
+    {
+        "problem_name": "Rosenbrock-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.7253866662158607,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:23:32.074951"
+    },
+    {
+        "problem_name": "Rosenbrock-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 2000,
+            "w": 0.7,
+            "c1": 1.0,
+            "c2": 1.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.18209663933674186,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:23:54.538504"
+    },
+    {
+        "problem_name": "Rosenbrock-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.0,
+            "w_decay": true,
+            "velocity_clamp": 0.7
+        },
+        "score": 0.01474324152046729,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:24:14.877563"
+    },
+    {
+        "problem_name": "Sphere-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 4.479230483064169e-52,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:24:32.288864"
+    },
+    {
+        "problem_name": "Sphere-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 75,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.0,
+            "c2": 1.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 2.6086987578876395e-31,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:24:45.291687"
+    },
+    {
+        "problem_name": "Rastrigin-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 7.962964487960448,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:25:10.669121"
+    },
+    {
+        "problem_name": "Rastrigin-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 11.939503679785702,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:25:43.279489"
+    },
+    {
+        "problem_name": "Ackley-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.2
+        },
+        "score": 0.000852761498795207,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:26:26.202761"
+    },
+    {
+        "problem_name": "Rosenbrock-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.4,
+            "c1": 2.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.2
+        },
+        "score": 20.204813410780293,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:27:07.399278"
+    },
+    {
+        "problem_name": "Rosenbrock-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.8,
+            "c2": 1.8,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 5.148454539891182,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:27:42.941846"
+    },
+    {
+        "problem_name": "Sphere-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.6397313696278229e-06,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:28:07.238625"
+    },
+    {
+        "problem_name": "Sphere-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1000,
+            "w": 0.6,
+            "c1": 1.3,
+            "c2": 1.3,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.081854811951808e-06,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:28:26.574362"
+    },
+    {
+        "problem_name": "Sphere-20D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 1500,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.5136472024207907e-11,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:28:45.588643"
+    },
+    {
+        "problem_name": "Rastrigin-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.6,
+            "c1": 2.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 28.353218736653616,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:29:09.869574"
+    },
+    {
+        "problem_name": "Rastrigin-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 2.0,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 13.750554895080995,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:29:49.864438"
+    },
+    {
+        "problem_name": "Rastrigin-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.5,
+            "c1": 2.2,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 55.213024394514036,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:30:10.657810"
+    },
+    {
+        "problem_name": "Ackley-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.3
+        },
+        "score": 1.2412848138432513,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:30:43.816976"
+    },
+    {
+        "problem_name": "Ackley-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 175,
+            "max_iterations": 2000,
+            "w": 0.55,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 1.3876601056329076,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:31:19.099615"
+    },
+    {
+        "problem_name": "Ackley-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.6,
+            "c1": 2.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.7119156792701173,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:31:54.355156"
+    },
+    {
+        "problem_name": "Rosenbrock-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 2000,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.2,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 74.27202938786547,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:32:28.007884"
+    },
+    {
+        "problem_name": "Rosenbrock-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.5,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 76.93211019699223,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:33:08.877803"
+    },
+    {
+        "problem_name": "Rosenbrock-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 298.1219167278772,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:33:21.926637"
+    },
+    {
+        "problem_name": "Sphere-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 150,
+            "max_iterations": 1500,
+            "w": 0.6,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 0.005784094658353025,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:33:48.494446"
+    },
+    {
+        "problem_name": "Sphere-30D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 200,
+            "max_iterations": 2000,
+            "w": 0.7,
+            "c1": 1.2,
+            "c2": 1.8,
+            "w_decay": true,
+            "velocity_clamp": 0.3
+        },
+        "score": 0.00026827123476249617,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-06T19:34:24.913557"
+    }
+]

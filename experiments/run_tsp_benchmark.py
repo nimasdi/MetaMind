@@ -26,8 +26,8 @@ from src.methods.neural.som import SOM
 from src.methods.fuzzy.controller import FuzzyController
 from src.orchestrator.agent import MetaMindAgent
 from src.utils.logging import setup_logger, get_experiment_logger, standard_progress_callback
-from src.utils.metrics import compute_statistics , compute_gap_percentage
-from src.utils.plotting import plot_convergence, plot_comparison_table , plot_box_comparison
+from src.utils.metrics import compute_statistics , compute_gap_percentage, pairwise_wilcoxon_comparison, print_wilcoxon_summary
+from src.utils.plotting import plot_convergence, plot_convergence_with_bands, plot_comparison_table , plot_box_comparison
 from src.orchestrator.memory import MemoryManager
 
 
@@ -61,15 +61,16 @@ def get_llm_recommendation(agent, problem, memory_manager):
     
     memory_context = memory_manager.get_context_string(
         problem_type="combinatorial_optimization", 
-        problem_name=problem.problem_name,
-        context=f"This is a TSP benchmark experiment. Minimize Total Distance.\n{memory_context}"
+        problem_name=problem.problem_name
     )
+
+    context_with_memory = f"This is a TSP benchmark experiment. Minimize Total Distance.{memory_context}"
 
     try:
         recommendation = agent.get_recommendation(
             problem_info=problem_info,
             available_methods=available_methods,
-            context="This is a TSP benchmark experiment. We need the best-performing method."
+            context=context_with_memory
         )
         
         print(f"\n LLM Recommendation:")
@@ -214,21 +215,78 @@ def run_method_on_problem(method_class, method_params, problem, n_runs=5):
     if stats['gap_percent']:
         print(f"  Mean Gap to Optimal: {stats['gap_percent']['mean']:.2f}% ± {stats['gap_percent']['std']:.2f}%")
     
-    # Plot convergence for best run
-    best_run = min(results, key=lambda r: r['best_fitness'])
-    if best_run['convergence_history']:
+    # Plot convergence with confidence bands across all runs
+    convergence_histories = {method_class.__name__: [r['convergence_history'] for r in results if r['convergence_history']]}
+    if convergence_histories[method_class.__name__]:
         from pathlib import Path
         figures_dir = Path(__file__).parent.parent / "outputs" / "figures"
-        plot_path = figures_dir / f"convergence_{method_class.__name__}_{problem.problem_name}.png"
-        plot_convergence(
-            best_run['convergence_history'],
-            title=f"{method_class.__name__} on {problem.problem_name}",
+        plot_path = figures_dir / f"convergence_bands_{method_class.__name__}_{problem.problem_name}.png"
+        plot_convergence_with_bands(
+            convergence_histories,
+            title=f"{method_class.__name__} on {problem.problem_name} (n={len(results)} runs)",
             ylabel="Tour Length",
             save_path=str(plot_path),
             show=False
         )
     
     return stats
+
+
+def perform_statistical_analysis(all_results, output_dir, logger):
+    """Perform Wilcoxon statistical comparisons between methods."""
+    if len(all_results) < 2:
+        logger.warning("Not enough results for statistical analysis")
+        return
+    
+    # Group results by problem
+    problems_results = {}
+    for result in all_results:
+        problem = result['problem']
+        if problem not in problems_results:
+            problems_results[problem] = {}
+        
+        method = result['method']
+        fitness_values = [r['best_fitness'] for r in result['all_runs']]
+        problems_results[problem][method] = fitness_values
+    
+    # Perform comparisons for each problem
+    logger.info("\n" + "="*100)
+    logger.info("STATISTICAL ANALYSIS: WILCOXON PAIRWISE COMPARISONS")
+    logger.info("="*100)
+    
+    statistical_results = {}
+    
+    for problem, methods_data in problems_results.items():
+        if len(methods_data) < 2:
+            continue
+        
+        logger.info(f"\nProblem: {problem}")
+        comparison_results = pairwise_wilcoxon_comparison(methods_data)
+        statistical_results[problem] = comparison_results
+        
+        print_wilcoxon_summary(comparison_results, title=f"Wilcoxon Test Results for {problem}")
+    
+    # Save statistical results to CSV
+    csv_path = output_dir / f"statistical_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    with open(csv_path, 'w') as f:
+        f.write("Problem,Method1,Method2,P_Value,Significant,Effect_Size\n")
+        
+        for problem, comp_results in statistical_results.items():
+            methods = comp_results['methods']
+            p_values = comp_results['p_values']
+            significant = comp_results['significant']
+            effect_sizes = comp_results['effect_sizes']
+            
+            for i in range(len(methods)):
+                for j in range(i + 1, len(methods)):
+                    p_val = p_values[i, j]
+                    sig = "Yes" if significant[i, j] else "No"
+                    eff = effect_sizes[i, j]
+                    
+                    if not np.isnan(p_val):
+                        f.write(f"{problem},{methods[i]},{methods[j]},{p_val:.6f},{sig},{eff:.4f}\n")
+    
+    logger.info(f"\nStatistical results saved to: {csv_path}")
 
 
 def create_summary_table(all_results):
@@ -474,6 +532,9 @@ def main():
                 )
                 if stats:
                     all_results.append(stats)
+    
+    # Statistical Analysis: Wilcoxon Pairwise Comparisons
+    perform_statistical_analysis(all_results, output_dir, logger)
     
     # Generate summary
     create_summary_table(all_results)

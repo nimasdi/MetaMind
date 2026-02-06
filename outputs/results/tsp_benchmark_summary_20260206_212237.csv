@@ -1,0 +1,6 @@
+Problem,Method,N_Runs,Best,Mean,Std,Median,Gap_Mean%,Gap_Std%,Time_Mean,Time_Std,Optimal
+TSP-eil51,AntColonyOptimization,5,429.48,430.62,0.80,431.11,1.09,0.19,85.85,0.39,426
+TSP-berlin52,AntColonyOptimization,5,7544.37,7544.43,0.12,7544.37,0.03,0.00,89.77,0.21,7542
+TSP-kroA100,AntColonyOptimization,5,21790.78,21942.36,99.22,21957.25,3.10,0.47,236.00,0.54,21282
+TSP-random_30,AntColonyOptimization,5,4517.67,4517.67,0.00,4517.67,11.54,0.00,17.83,0.06,5107.014776321999
+TSP-random_50,AntColonyOptimization,5,5713.09,5713.09,0.00,5713.09,0.00,0.00,92.29,0.42,5713.088702766459

@@ -18,11 +18,16 @@ class PromptBuilder:
         "GA": {
             "name": "Genetic Algorithm",
             "category": MethodCategory.EVOLUTIONARY.value,
-            "description": "Population-based evolutionary algorithm using selection, crossover, and mutation.",
-            "best_for": ["TSP", "combinatorial optimization", "discrete optimization"],
-            "problem_types": ["TSP", "combinatorial", "discrete"],
-            "strengths": ["General-purpose", "Handles discrete problems well", "Parallelizable"],
+            "description": "Population-based evolutionary algorithm with 3 variants: (1) PERMUTATION for TSP/routing, (2) CONTINUOUS for real-valued optimization, (3) BINARY for boolean problems.",
+            "best_for": ["TSP", "combinatorial optimization", "continuous optimization", "discrete optimization", "function optimization"],
+            "problem_types": ["TSP", "combinatorial", "discrete", "continuous", "function_optimization"],
+            "strengths": ["General-purpose", "Handles discrete and continuous problems", "Parallelizable", "Multiple variants available"],
             "weaknesses": ["Slow on high-dimensional problems", "Needs proper population sizing"],
+            "ga_variants": {
+                "permutation": "Use for TSP, routing, scheduling, job assignment - problems with permutations",
+                "continuous": "Use for real-valued optimization, function optimization, continuous search spaces",
+                "binary": "Use for binary/boolean problems, feature selection, knapsack problems"
+            }
         },
         "GP": {
             "name": "Genetic Programming",
@@ -131,7 +136,7 @@ class PromptBuilder:
                             === PARAMETER NAMING CONVENTIONS ===
 
                             ACO: n_ants (swarm size), alpha (pheromone weight), beta (heuristic weight), evaporation_rate
-                            GA: population_size, crossover_rate, mutation_rate, selection (tournament/roulette/rank)
+                            GA: population_size, crossover_rate, mutation_rate, selection (tournament/roulette/rank), ga_type (permutation|continuous|binary), crossover_type (depends on ga_type)
                             GP: population_size, generations, max_depth, crossover_rate, mutation_rate
                             PSO: n_particles, w (inertia), c1, c2 (social/cognitive), velocity_clamp
                             FuzzyController: n_membership_functions, membership_type, defuzzification
@@ -139,6 +144,15 @@ class PromptBuilder:
                             MLP: hidden_layers (list), learning_rate, activation, max_epochs
                             Perceptron: learning_rate, max_epochs, bias
                             SOM: map_size (tuple), learning_rate_initial, max_epochs, topology
+
+                            === GA TYPE & CROSSOVER TYPE SELECTION ===
+
+                            When recommending GA:
+                            1. IF problem is TSP/routing/scheduling/combinatorial → ga_type: "permutation", crossover_type: "pmx" or "ox" or "cx"
+                            2. IF problem is continuous optimization/function optimization → ga_type: "continuous", crossover_type: "single_point" or "two_point", include "bounds" parameter
+                            3. IF problem is binary/boolean feature selection → ga_type: "binary", crossover_type: "single_point" or "two_point"
+                            
+                            For continuous GA: can optionally include gaussian_std parameter (0.01-1.0, typical: 0.1-0.2)
 
                             === RESPONSE FORMAT ===
 
@@ -317,6 +331,12 @@ class PromptBuilder:
                     - Problem characteristics (size, dimensionality, constraints)
                     - Method strengths and typical use cases
                     - Computational budget (keep iterations reasonable)
+                    
+                    === GA VARIANTS REMINDER ===
+                    When including GA in your selection, choose the appropriate variant:
+                    - ga_type: "permutation" with crossover_type from [pmx, ox, cx] for TSP/combinatorial
+                    - ga_type: "continuous" with crossover_type from [single_point, two_point] for continuous optimization
+                    - ga_type: "binary" with crossover_type from [single_point, two_point] for binary problems
                     
                     === RESPONSE FORMAT ===
                     

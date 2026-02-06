@@ -48,10 +48,23 @@ class GeneticAlgorithm(BaseMethod):
             'range': (0, 10),
             'default': 2
         },
+        'ga_type': {
+            'type': str,
+            'options': ['permutation', 'continuous', 'binary'],
+            'default': 'permutation'
+        },
         'crossover_type': {
             'type': str,
-            'options': ['pmx', 'ox', 'cx'],
+            'options': ['pmx', 'ox', 'cx', 'single_point', 'two_point'],
             'default': 'pmx'
+        },
+        'bounds': {
+            'default': None
+        },
+        'gaussian_std': {
+            'type': float,
+            'range': (0.01, 1.0),
+            'default': 0.1
         }
     }
 
@@ -64,11 +77,35 @@ class GeneticAlgorithm(BaseMethod):
         self.convergence_history = []
 
     def initialize_population(self, problem_size):
+        ga_type = self.parameters.get('ga_type', 'permutation')
         population = []
-        for _ in range(self.parameters['population_size']):
-            individual = list(range(problem_size))
-            random.shuffle(individual)
-            population.append(individual)
+        
+        if ga_type == 'permutation':
+            for _ in range(self.parameters['population_size']):
+                individual = list(range(problem_size))
+                random.shuffle(individual)
+                population.append(individual)
+        elif ga_type == 'binary':
+            for _ in range(self.parameters['population_size']):
+                individual = [random.randint(0, 1) for _ in range(problem_size)]
+                population.append(individual)
+        elif ga_type == 'continuous':
+            bounds = self.parameters.get('bounds', None)
+            if bounds is None:
+                bounds = [(0, 1)] * problem_size
+            elif isinstance(bounds, tuple) and len(bounds) == 2 and isinstance(bounds[0], (int, float)):
+                bounds = [bounds] * problem_size
+            elif isinstance(bounds, list) and len(bounds) == problem_size:
+                pass
+            else:
+                bounds = [(0, 1)] * problem_size
+                
+            for _ in range(self.parameters['population_size']):
+                individual = [random.uniform(bounds[i][0], bounds[i][1]) for i in range(problem_size)]
+                population.append(individual)
+        else:
+            raise ValueError(f"Unknown GA type: {ga_type}")
+        
         return population
 
     def evaluate_fitness(self, individual, problem_data):
@@ -108,6 +145,20 @@ class GeneticAlgorithm(BaseMethod):
             return self.selection_rank(population, fitnesses)
         else:
             raise ValueError(f"Unknown selection method: {selection}")
+
+    def crossover_single_point(self, parent1, parent2):
+        size = len(parent1)
+        point = random.randint(1, size - 1)
+        child1 = parent1[:point] + parent2[point:]
+        child2 = parent2[:point] + parent1[point:]
+        return child1, child2
+
+    def crossover_two_point(self, parent1, parent2):
+        size = len(parent1)
+        point1, point2 = sorted(random.sample(range(1, size), 2))
+        child1 = parent1[:point1] + parent2[point1:point2] + parent1[point2:]
+        child2 = parent2[:point1] + parent1[point1:point2] + parent2[point2:]
+        return child1, child2
 
     def crossover_pmx(self, parent1, parent2):
         size = len(parent1)
@@ -211,22 +262,78 @@ class GeneticAlgorithm(BaseMethod):
 
     def crossover(self, parent1, parent2):
         crossover_type = self.parameters['crossover_type']
-        if crossover_type == 'pmx':
-            return self.crossover_pmx(parent1, parent2)
-        elif crossover_type == 'ox':
-            return self.crossover_ox(parent1, parent2)
-        elif crossover_type == 'cx':
-            return self.crossover_cx(parent1, parent2)
+        ga_type = self.parameters.get('ga_type', 'permutation')
+        
+        # For continuous and binary GAs, use single/two point crossover
+        if ga_type in ['continuous', 'binary']:
+            if crossover_type in ['single_point', 'pmx']:  # pmx defaults to single_point for non-permutation
+                return self.crossover_single_point(parent1, parent2)
+            elif crossover_type in ['two_point', 'ox']:  # ox defaults to two_point for non-permutation
+                return self.crossover_two_point(parent1, parent2)
+            elif crossover_type == 'cx':
+                return self.crossover_two_point(parent1, parent2)  # cx defaults to two_point
+            else:
+                return self.crossover_single_point(parent1, parent2)
+        
+        # For permutation GA, use specialized operators
+        elif ga_type == 'permutation':
+            if crossover_type == 'pmx':
+                return self.crossover_pmx(parent1, parent2)
+            elif crossover_type == 'ox':
+                return self.crossover_ox(parent1, parent2)
+            elif crossover_type == 'cx':
+                return self.crossover_cx(parent1, parent2)
+            elif crossover_type == 'single_point':
+                return self.crossover_single_point(parent1, parent2)
+            elif crossover_type == 'two_point':
+                return self.crossover_two_point(parent1, parent2)
+            else:
+                raise ValueError(f"Unknown crossover type: {crossover_type}")
         else:
-            raise ValueError(f"Unknown crossover type: {crossover_type}")
+            raise ValueError(f"Unknown GA type: {ga_type}")
 
     def mutate(self, individual, problem_size):
         mutation_rate = self.parameters['mutation_rate']
-        individual = individual.copy()
-        for i in range(problem_size):
-            if random.random() < mutation_rate:
-                j = random.randint(0, problem_size - 1)
-                individual[i], individual[j] = individual[j], individual[i]
+        ga_type = self.parameters.get('ga_type', 'permutation')
+        individual = individual.copy() if isinstance(individual, list) else individual.copy()
+        
+        if ga_type == 'permutation':
+            # Swap mutation for permutation GA
+            for i in range(problem_size):
+                if random.random() < mutation_rate:
+                    j = random.randint(0, problem_size - 1)
+                    individual[i], individual[j] = individual[j], individual[i]
+        
+        elif ga_type == 'binary':
+            # Bit flip mutation for binary GA
+            for i in range(problem_size):
+                if random.random() < mutation_rate:
+                    individual[i] = 1 - individual[i]
+        
+        elif ga_type == 'continuous':
+            # Gaussian mutation for continuous GA
+            bounds = self.parameters.get('bounds', None)
+            # Handle different bounds formats
+            if bounds is None:
+                bounds = [(0, 1)] * problem_size
+            elif isinstance(bounds, tuple) and len(bounds) == 2 and isinstance(bounds[0], (int, float)):
+                # Single tuple (low, high) for all dimensions
+                bounds = [bounds] * problem_size
+            elif isinstance(bounds, list) and len(bounds) == problem_size:
+                # Already in correct format
+                pass
+            else:
+                # Default fallback
+                bounds = [(0, 1)] * problem_size
+            
+            gaussian_std = self.parameters.get('gaussian_std', 0.1)
+            for i in range(problem_size):
+                if random.random() < mutation_rate:
+                    mutation = np.random.normal(0, gaussian_std)
+                    individual[i] = individual[i] + mutation
+                    # Clip to bounds
+                    individual[i] = max(bounds[i][0], min(bounds[i][1], individual[i]))
+        
         return individual
 
     def apply_elitism(self, population, fitnesses):

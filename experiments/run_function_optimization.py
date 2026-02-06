@@ -30,7 +30,6 @@ from src.orchestrator.memory import MemoryManager
 
 
 def convert_to_serializable(obj):
-    """Convert numpy types to native Python types for JSON serialization."""
     if isinstance(obj, dict):
         return {key: convert_to_serializable(value) for key, value in obj.items()}
     elif isinstance(obj, list):
@@ -46,7 +45,6 @@ def convert_to_serializable(obj):
 
 
 def get_llm_recommendation(agent, problem, memory_manager):
-    """Get LLM recommendation for function optimization problem."""
     print(f"\n{'='*80}")
     print(f"Asking LLM for recommendation on {problem.problem_name}...")
     print(f"{'='*80}")
@@ -100,7 +98,6 @@ def get_llm_recommendation(agent, problem, memory_manager):
 
 
 def create_method_from_recommendation(recommendation):
-    """Instantiate method from LLM recommendation."""
     method_map = {
         'PSO': PSO,
         'ParticleSwarmOptimization': PSO,

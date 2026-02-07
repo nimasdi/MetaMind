@@ -30,6 +30,9 @@ from src.utils.metrics import compute_statistics , compute_gap_percentage, pairw
 from src.utils.plotting import plot_convergence, plot_convergence_with_bands, plot_comparison_table , plot_box_comparison
 from src.orchestrator.memory import MemoryManager
 
+from src.utils.metrics import compute_confidence_interval
+from src.utils.logging import get_experiment_logger
+
 
 def get_llm_recommendation(agent, problem, memory_manager):
 
@@ -39,33 +42,26 @@ def get_llm_recommendation(agent, problem, memory_manager):
     
     if isinstance(problem, TSPProblem):
         available_methods = {
-            # Evolutionary/Swarm Intelligence
             'AntColonyOptimization': AntColonyOptimization.PARAM_SPECS,
             'GeneticAlgorithm': GeneticAlgorithm.PARAM_SPECS,
             'GeneticProgramming': GeneticProgramming.PARAM_SPECS,
             'PSO': PSO.PARAM_SPECS,
-            # Neural Networks
             'MLP': MLP.PARAM_SPECS,
             'Perceptron': Perceptron.PARAM_SPECS,
             'HopfieldNetwork': HopfieldNetwork.PARAM_SPECS,
             'SOM': SOM.PARAM_SPECS,
-            # Fuzzy Systems
             'FuzzyController': FuzzyController.PARAM_SPECS,
         }
     else:
-        # For other problem types, offer all methods
         available_methods = {
-            # Evolutionary/Swarm Intelligence
             'AntColonyOptimization': AntColonyOptimization.PARAM_SPECS,
             'GeneticAlgorithm': GeneticAlgorithm.PARAM_SPECS,
             'GeneticProgramming': GeneticProgramming.PARAM_SPECS,
             'PSO': PSO.PARAM_SPECS,
-            # Neural Networks
             'MLP': MLP.PARAM_SPECS,
             'Perceptron': Perceptron.PARAM_SPECS,
             'HopfieldNetwork': HopfieldNetwork.PARAM_SPECS,
             'SOM': SOM.PARAM_SPECS,
-            # Fuzzy Systems
             'FuzzyController': FuzzyController.PARAM_SPECS,
         }
     
@@ -74,7 +70,7 @@ def get_llm_recommendation(agent, problem, memory_manager):
         problem_name=problem.problem_name
     )
 
-    context_with_memory = f"This is a TSP benchmark experiment. Minimize Total Distance.{memory_context}"
+    context_with_memory = f"This is a TSP benchmark experiment. Minimize Total Distance.\n{memory_context}"
 
     try:
         recommendation = agent.get_recommendation(
@@ -196,7 +192,6 @@ def run_method_on_problem(method_class, method_params, problem, n_runs=5):
     times = [r['computation_time'] for r in results]
     gaps = [r['gap_percent'] for r in results if r['gap_percent'] is not None]
     
-    # Use compute_statistics utility
     fitness_stats = compute_statistics(fitness_values)
     time_stats = compute_statistics(times)
     gap_stats = compute_statistics(gaps) if gaps else None
@@ -212,8 +207,6 @@ def run_method_on_problem(method_class, method_params, problem, n_runs=5):
         'all_runs': results
     }
     
-    # Compute confidence intervals
-    from src.utils.metrics import compute_confidence_interval
     ci_lower, ci_upper = compute_confidence_interval(fitness_values)
     
     print(f"\nSummary Statistics:")
@@ -225,7 +218,7 @@ def run_method_on_problem(method_class, method_params, problem, n_runs=5):
     if stats['gap_percent']:
         print(f"  Mean Gap to Optimal: {stats['gap_percent']['mean']:.2f}% ± {stats['gap_percent']['std']:.2f}%")
     
-    # Plot convergence with confidence bands across all runs
+    
     convergence_histories = {method_class.__name__: [r['convergence_history'] for r in results if r['convergence_history']]}
     if convergence_histories[method_class.__name__]:
         from pathlib import Path
@@ -243,12 +236,11 @@ def run_method_on_problem(method_class, method_params, problem, n_runs=5):
 
 
 def perform_statistical_analysis(all_results, output_dir, logger):
-    """Perform Wilcoxon statistical comparisons between methods."""
     if len(all_results) < 2:
         logger.warning("Not enough results for statistical analysis")
         return
     
-    # Group results by problem
+    
     problems_results = {}
     for result in all_results:
         problem = result['problem']
@@ -259,7 +251,7 @@ def perform_statistical_analysis(all_results, output_dir, logger):
         fitness_values = [r['best_fitness'] for r in result['all_runs']]
         problems_results[problem][method] = fitness_values
     
-    # Perform comparisons for each problem
+    
     logger.info("\n" + "="*100)
     logger.info("STATISTICAL ANALYSIS: WILCOXON PAIRWISE COMPARISONS")
     logger.info("="*100)
@@ -276,7 +268,7 @@ def perform_statistical_analysis(all_results, output_dir, logger):
         
         print_wilcoxon_summary(comparison_results, title=f"Wilcoxon Test Results for {problem}")
     
-    # Save statistical results to CSV
+    
     csv_path = output_dir / f"statistical_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
     with open(csv_path, 'w') as f:
         f.write("Problem,Method1,Method2,P_Value,Significant,Effect_Size\n")
@@ -371,8 +363,7 @@ def save_results(all_results, output_dir):
 
 
 def main():
-    # Setup logger
-    from src.utils.logging import get_experiment_logger
+     
     logger = get_experiment_logger("tsp_benchmark", str(project_root / "outputs" / "logs"))
     
     logger.info("="*100)
@@ -389,11 +380,11 @@ def main():
     agent = MetaMindAgent(api_key=api_key, verbose=True)
     logger.info(f"MetaMind Agent initialized with model: {agent.model}")
     
-    n_runs = 5  # Number of runs per method per problem
+    n_runs = 5 
     output_dir = project_root / "outputs" / "results"
     figures_dir = project_root / "outputs" / "figures"
     memory_dir = project_root / "outputs" / "memory"
-    use_llm_selection = True  # Toggle LLM-based selection
+    use_llm_selection = True  
     
     problems = []
     
@@ -410,7 +401,6 @@ def main():
             logger.warning(f"  ✗ Failed to load {instance_name}: {e}")
     
     logger.info("\nGenerating random instances...")
-    # Random 30-city instance with exact solver
     logger.info("  Generating random_30 and computing exact optimal solution...")
     problem_30 = create_random_tsp(n_cities=30, seed=42, bounds=(0, 1000))
     try:
@@ -426,7 +416,6 @@ def main():
         problems.append(problem_30)
         logger.info(f"  ✓ Generated random_30: {problem_30.n_cities} cities, LKH estimate={lkh_distance:.2f}")
     
-    # Random 50-city instance with LKH estimation
     logger.info("  Generating random_50 and computing LKH estimation...")
     problem_50 = create_random_tsp(n_cities=50, seed=123, bounds=(0, 1000))
     _, lkh_distance = problem_50.get_lkh_estimation(num_starts=50, use_2opt=True, time_limit=120)
@@ -449,10 +438,8 @@ def main():
             recommendation = get_llm_recommendation(agent, problem, memory_manager)
             
             if recommendation:
-                # Run the recommended method
                 try:
                     method_class = {
-                        # Evolutionary/Swarm Intelligence
                         'AntColonyOptimization': AntColonyOptimization,
                         'ACO': AntColonyOptimization,
                         'GeneticAlgorithm': GeneticAlgorithm,
@@ -461,7 +448,6 @@ def main():
                         'GP': GeneticProgramming,
                         'PSO': PSO,
                         'ParticleSwarmOptimization': PSO,
-                        # Neural Networks
                         'MLP': MLP,
                         'MultiLayerPerceptron': MLP,
                         'Perceptron': Perceptron,
@@ -469,7 +455,6 @@ def main():
                         'Hopfield': HopfieldNetwork,
                         'SOM': SOM,
                         'SelfOrganizingMap': SOM,
-                        # Fuzzy Systems
                         'FuzzyController': FuzzyController,
                         'Fuzzy': FuzzyController,
                     }.get(recommendation.selected_method)
@@ -487,7 +472,7 @@ def main():
                             stats['llm_expected_performance'] = recommendation.expected_performance
                             all_results.append(stats)
 
-                            best_fitness = stats['best_fitness']['min'] # min distance is best for TSP
+                            best_fitness = stats['best_fitness']['min']
                             
                             memory_entry = {
                                 "Problem": problem.problem_name,
@@ -505,7 +490,6 @@ def main():
                 except Exception as e:
                     print(f"Error running recommended method: {e}")
         else:
-            # Original fixed method configuration
             methods = [
                 {
                     'class': AntColonyOptimization,
@@ -543,23 +527,23 @@ def main():
                 if stats:
                     all_results.append(stats)
     
-    # Statistical Analysis: Wilcoxon Pairwise Comparisons
+    
     perform_statistical_analysis(all_results, output_dir, logger)
     
-    # Generate summary
+    
     create_summary_table(all_results)
     
-    # Save results
+    
     save_results(all_results, output_dir)
     
-    # Generate visualizations
+    
     logger.info("\nGenerating visualizations...")
     if all_results:
-        # Plot comparison table
+        
         table_path = figures_dir / f"comparison_table_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
         plot_comparison_table(all_results, save_path=str(table_path))
         
-        # Group results by problem for box plots
+        
         problems_dict = {}
         for result in all_results:
             problem_name = result['problem']
@@ -578,7 +562,7 @@ def main():
                 show=False
             )
     
-    # Print LLM agent stats
+    
     agent_stats = agent.get_stats()
     logger.info("="*100)
     logger.info("LLM AGENT STATISTICS")

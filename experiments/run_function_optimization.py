@@ -288,7 +288,7 @@ def run_agent_optimization(agent, problem, memory_manager, n_runs=10, enable_fee
     best_fitness = iteration_summary['best_fitness']['min']
 
     memory_entry = {
-        "problem": problem.problem_name,
+        "Problem": problem.problem_name,
         "Method": recommendation.selected_method,
         "Parameters": recommendation.parameters,
         "Fitness": best_fitness, 
@@ -449,7 +449,7 @@ def run_agent_optimization(agent, problem, memory_manager, n_runs=10, enable_fee
 
             fb_best_fitness = feedback_summary['best_fitness']['min']
             fb_entry = {
-                "problem": problem.problem_name,
+                "Problem": problem.problem_name,
                 "Method": feedback_recommendation.selected_method,
                 "Parameters": feedback_recommendation.parameters,
                 "Fitness": fb_best_fitness, 

@@ -858,7 +858,7 @@ The {recommendation.selected_method} algorithm optimized the {getattr(problem, '
                 memory_category = problem_type_map.get(st.session_state.current_problem_type, st.session_state.current_problem_type)
                 
                 memory_entry = {
-                    "problem": problem.problem_name,
+                    "Problem": problem.problem_name,
                     "Method": recommendation.selected_method,
                     "Parameters": recommendation.parameters,
                     "Fitness": best_fitness,

@@ -250,5 +250,141 @@
         "score": 0.7272727272727273,
         "metric_name": "F1",
         "timestamp": "2026-02-06T20:13:36.060046"
+    },
+    {
+        "problem_name": null,
+        "method": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32,
+                16
+            ],
+            "activation": "relu",
+            "learning_rate": 0.0005,
+            "max_epochs": 250,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "score": 0.6956521739130435,
+        "metric_name": "F1",
+        "timestamp": "2026-02-07T10:26:55.296634"
+    },
+    {
+        "problem_name": null,
+        "method": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.0005,
+            "max_epochs": 250,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.2,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "score": 0.6862745098039216,
+        "metric_name": "F1",
+        "timestamp": "2026-02-07T10:27:42.147612"
+    },
+    {
+        "problem_name": null,
+        "method": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32
+            ],
+            "activation": "relu",
+            "learning_rate": 0.0005,
+            "max_epochs": 250,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.15,
+            "early_stopping_patience": 20,
+            "random_state": 404
+        },
+        "score": 0.6956521739130435,
+        "metric_name": "F1",
+        "timestamp": "2026-02-07T10:28:36.624211"
+    },
+    {
+        "problem_name": "Titanic",
+        "problem_type": "classification",
+        "method": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32,
+                16
+            ],
+            "activation": "relu",
+            "learning_rate": 0.001,
+            "max_epochs": 250,
+            "batch_size": 32,
+            "optimizer": "adam",
+            "validation_split": 0.15,
+            "early_stopping_patience": 25,
+            "random_state": 404,
+            "dropout": 0.3
+        },
+        "score": 0.7045454545454546,
+        "metric_name": "F1",
+        "timestamp": "2026-02-07T11:02:00.412986"
+    },
+    {
+        "problem_name": "Titanic",
+        "problem_type": "classification",
+        "method": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32,
+                16
+            ],
+            "activation": "relu",
+            "learning_rate": 0.0005,
+            "max_epochs": 250,
+            "batch_size": 64,
+            "optimizer": "adam",
+            "validation_split": 0.15,
+            "early_stopping_patience": 25,
+            "random_state": 404,
+            "dropout": 0.2
+        },
+        "score": 0.6728971962616822,
+        "metric_name": "F1",
+        "timestamp": "2026-02-07T11:02:47.421889"
+    },
+    {
+        "problem_name": "Titanic",
+        "problem_type": "classification",
+        "method": "MLP",
+        "parameters": {
+            "hidden_layers": [
+                64,
+                32,
+                16
+            ],
+            "activation": "relu",
+            "learning_rate": 0.001,
+            "max_epochs": 250,
+            "batch_size": 64,
+            "optimizer": "adam",
+            "validation_split": 0.15,
+            "early_stopping_patience": 20,
+            "random_state": 404,
+            "dropout": 0.2
+        },
+        "score": 0.6788990825688074,
+        "metric_name": "F1",
+        "timestamp": "2026-02-07T11:03:30.079285"
     }
 ]

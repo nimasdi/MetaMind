@@ -33,7 +33,8 @@ class MemoryManager:
         full_data = self.load_memory(problem_type)
 
         clean_entry = {
-            "problem_name": entry.get("problem"),
+            "problem_name": entry.get("Problem"),
+            "problem_type": problem_type,
             "method": entry.get("Method"),
             "parameters": entry.get("Parameters"),
             "score": entry.get("F1_Score") or entry.get("Silhouette") or entry.get("Fitness", 0.0),

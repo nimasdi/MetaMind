@@ -641,8 +641,7 @@ def solve_problem_interactive(agent, problem):
             # Calculate metrics
             gap_percent = None
             if problem.optimal_value is not None:
-                error = abs(best_fitness - problem.optimal_value)
-                gap_percent = (error / max(abs(problem.optimal_value), 1e-10)) * 100
+                gap_percent = compute_gap_percentage(best_fitness, problem.optimal_value)
             
             # Display metrics
             with metrics_placeholder.container():
@@ -1113,7 +1112,7 @@ def main():
             problem_type = st.selectbox(
                 "Function Type",
                 ["Rastrigin Function", "Ackley Function", "Rosenbrock Function", 
-                 "Sphere Function", "Griewank Function"]
+                 "Sphere Function"]
             )
             dimension = st.slider("Dimension", 2, 50, 10)
             problem_kwargs = {"dimension": dimension}

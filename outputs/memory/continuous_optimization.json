@@ -1038,5 +1038,37 @@
         "score": 0.00026827123476249617,
         "metric_name": "Fitness",
         "timestamp": "2026-02-06T19:34:24.913557"
+    },
+    {
+        "problem_name": "Rastrigin-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 100,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 1.5,
+            "c2": 1.5,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 8.954626476020564,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-07T10:15:44.870657"
+    },
+    {
+        "problem_name": "Rastrigin-10D",
+        "method": "PSO",
+        "parameters": {
+            "n_particles": 50,
+            "max_iterations": 1000,
+            "w": 0.7,
+            "c1": 2.0,
+            "c2": 2.0,
+            "w_decay": true,
+            "velocity_clamp": 0.5
+        },
+        "score": 5.970481922351837,
+        "metric_name": "Fitness",
+        "timestamp": "2026-02-07T10:18:30.932693"
     }
 ]

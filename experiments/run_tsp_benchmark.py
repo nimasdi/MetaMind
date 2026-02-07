@@ -39,8 +39,18 @@ def get_llm_recommendation(agent, problem, memory_manager):
     
     if isinstance(problem, TSPProblem):
         available_methods = {
+            # Evolutionary/Swarm Intelligence
             'AntColonyOptimization': AntColonyOptimization.PARAM_SPECS,
             'GeneticAlgorithm': GeneticAlgorithm.PARAM_SPECS,
+            'GeneticProgramming': GeneticProgramming.PARAM_SPECS,
+            'PSO': PSO.PARAM_SPECS,
+            # Neural Networks
+            'MLP': MLP.PARAM_SPECS,
+            'Perceptron': Perceptron.PARAM_SPECS,
+            'HopfieldNetwork': HopfieldNetwork.PARAM_SPECS,
+            'SOM': SOM.PARAM_SPECS,
+            # Fuzzy Systems
+            'FuzzyController': FuzzyController.PARAM_SPECS,
         }
     else:
         # For other problem types, offer all methods

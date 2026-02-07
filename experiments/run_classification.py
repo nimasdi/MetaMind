@@ -36,6 +36,9 @@ from src.methods.fuzzy.controller import FuzzyController
 from src.methods.evolutionary.ga import GeneticAlgorithm
 from src.methods.evolutionary.pso import PSO
 from src.orchestrator.memory import MemoryManager
+from src.methods.evolutionary.pso import PSO
+from src.methods.evolutionary.aco import AntColonyOptimization
+from src.methods.evolutionary.gp import GeneticProgramming
 
 def get_method_class(method_name):
     mapping = {
@@ -317,9 +320,15 @@ def run_classification_benchmark():
         print(f"\n>>> Session {session_idx+1}/{n_sessions} for Titanic Classification")
 
         available_methods = {
+            'PSO': PSO.PARAM_SPECS,
+            'ACO': AntColonyOptimization.PARAM_SPECS,
             'MLP': MLP.PARAM_SPECS,
             'Perceptron': Perceptron.PARAM_SPECS,
-            'FuzzyController': FuzzyController.PARAM_SPECS,
+            'SOM': SOM.PARAM_SPECS,
+            'Fuzzy': FuzzyController.PARAM_SPECS,
+            'Hopfield': HopfieldNetwork.PARAM_SPECS,
+            'GP': GeneticProgramming.PARAM_SPECS,
+            'GA': GeneticAlgorithm.PARAM_SPECS,
         }
         
         problem_info = problem.get_info()

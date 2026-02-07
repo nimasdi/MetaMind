@@ -20,6 +20,14 @@ from src.problems.continuous import (
 
 from src.methods.evolutionary.pso import PSO
 from src.methods.evolutionary.ga import GeneticAlgorithm
+from src.methods.neural.mlp import MLP
+from src.methods.neural.perceptron import Perceptron
+from src.methods.neural.hopfield import HopfieldNetwork
+from src.methods.neural.som import SOM
+from src.methods.fuzzy.controller import FuzzyController
+from src.methods.evolutionary.aco import AntColonyOptimization
+from src.methods.evolutionary.gp import GeneticProgramming
+
 
 from src.orchestrator.agent import MetaMindAgent
 from src.utils.logging import setup_logger, get_experiment_logger, standard_progress_callback
@@ -53,7 +61,14 @@ def get_llm_recommendation(agent, problem, memory_manager):
     
     available_methods = {
         'PSO': PSO.PARAM_SPECS,
-        'GeneticAlgorithm': GeneticAlgorithm.PARAM_SPECS,
+        'ACO': AntColonyOptimization.PARAM_SPECS,
+        'MLP': MLP.PARAM_SPECS,
+        'Perceptron': Perceptron.PARAM_SPECS,
+        'SOM': SOM.PARAM_SPECS,
+        'Fuzzy': FuzzyController.PARAM_SPECS,
+        'Hopfield': HopfieldNetwork.PARAM_SPECS,
+        'GP': GeneticProgramming.PARAM_SPECS,
+        'GA': GeneticAlgorithm.PARAM_SPECS,
     }
 
     memory_str = memory_manager.get_context_string(

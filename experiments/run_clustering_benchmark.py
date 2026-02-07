@@ -338,10 +338,15 @@ def run_clustering_benchmark():
             print(f"\n>>> Session {session_idx+1}/{n_sessions} for {problem.problem_name}")
             
             available_methods = {
-                'SOM': SOM.PARAM_SPECS,
                 'PSO': PSO.PARAM_SPECS,
+                'ACO': AntColonyOptimization.PARAM_SPECS,
+                'MLP': MLP.PARAM_SPECS,
+                'Perceptron': Perceptron.PARAM_SPECS,
+                'SOM': SOM.PARAM_SPECS,
+                'Fuzzy': FuzzyController.PARAM_SPECS,
+                'Hopfield': HopfieldNetwork.PARAM_SPECS,
+                'GP': GeneticProgramming.PARAM_SPECS,
                 'GA': GeneticAlgorithm.PARAM_SPECS,
-                'Fuzzy': FuzzyController.PARAM_SPECS
             }
             problem_info = problem.get_info()
 
